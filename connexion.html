@@ -143,6 +143,7 @@
             margin-bottom: 20px;
             text-align: center;
             display: none;
+            line-height: 1.5;
         }
 
         .message.error {
@@ -162,9 +163,16 @@
             color: #1976d2;
             border: 1px solid #bbdefb;
         }
-
+        
         .message.show {
             display: block;
+        }
+
+        .message a {
+            color: inherit;
+            font-weight: bold;
+            text-decoration: underline;
+            cursor: pointer;
         }
 
         .loader {
@@ -237,16 +245,13 @@
         </div>
 
         <div class="form-container">
-            <!-- Message de notification -->
             <div id="message" class="message"></div>
             
-            <!-- Loader -->
             <div id="loader" class="loader">
                 <div class="spinner"></div>
                 <p style="margin-top: 10px; color: #666;">Chargement...</p>
             </div>
 
-            <!-- Formulaire de Connexion -->
             <div id="connexion-form" class="form-content active">
                 <h2>Bon retour !</h2>
                 <form id="login-form">
@@ -265,7 +270,6 @@
                 </div>
             </div>
 
-            <!-- Formulaire d'Inscription -->
             <div id="inscription-form" class="form-content">
                 <h2>Créer un compte</h2>
                 <form id="signup-form">
@@ -287,15 +291,14 @@
                         <label for="signup-password">Mot de passe</label>
                         <input type="password" id="signup-password" required placeholder="••••••••" minlength="6">
                     </div>
-                    <button type="submit" class="btn">S'inscrire</button>
+                    <button type="submit" class="btn">Créer mon compte</button>
                 </form>
             </div>
 
-            <!-- Formulaire Mot de passe oublié -->
             <div id="reset-form" class="form-content">
                 <h2>Réinitialiser le mot de passe</h2>
                 <div class="info-text">
-                    Entrez votre adresse email. Si elle est enregistrée dans notre système, vous recevrez un lien pour créer un nouveau mot de passe.
+                    Entrez votre adresse e-mail. Si un compte y est associé, vous recevrez un lien pour créer un nouveau mot de passe.
                 </div>
                 <form id="password-reset-form">
                     <div class="input-group">
@@ -308,49 +311,55 @@
                     <a href="#" onclick="switchTab('connexion'); return false;">Retour à la connexion</a>
                 </div>
             </div>
+            
+            <div id="update-password-form" class="form-content">
+                <h2>Créez votre nouveau mot de passe</h2>
+                <form id="new-password-form">
+                    <div class="input-group">
+                        <label for="new-password">Nouveau mot de passe</label>
+                        <input type="password" id="new-password" required placeholder="••••••••" minlength="6">
+                    </div>
+                    <button type="submit" class="btn">Enregistrer le mot de passe</button>
+                </form>
+            </div>
         </div>
     </div>
 
     <script src="supabaseClient.js"></script>
     <script>
-        // Attendre que supabaseClient soit chargé
         let supabase, getCurrentUser, getUserProfile, redirectByRole;
 
         function initializeApp() {
             if (window.supabaseClient) {
                 ({ supabase, getCurrentUser, getUserProfile, redirectByRole } = window.supabaseClient);
-                checkIfLoggedIn();
+                handleAuthEvents();
             } else {
                 setTimeout(initializeApp, 100);
             }
         }
 
-        // Vérifier si déjà connecté au chargement
-        async function checkIfLoggedIn() {
-            const user = await getCurrentUser();
-            if (user) {
-                await redirectByRole();
-            }
+        // Gérer les événements d'authentification (connexion, changement de mot de passe)
+        function handleAuthEvents() {
+            supabase.auth.onAuthStateChange((event, session) => {
+                if (event === 'PASSWORD_RECOVERY') {
+                    // L'utilisateur a cliqué sur le lien de réinitialisation
+                    // On affiche le formulaire pour changer le mot de passe
+                    document.querySelectorAll('.tabs').forEach(t => t.style.display = 'none');
+                    switchTab('update-password');
+                } else if (event === 'SIGNED_IN') {
+                    // Si l'utilisateur se connecte, on redirige
+                    redirectByRole();
+                }
+            });
         }
 
-        // Initialiser l'app
         window.addEventListener('DOMContentLoaded', initializeApp);
 
-        // Gestion des onglets
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function(e) {
-                e.preventDefault();
-                const tabName = this.getAttribute('data-tab');
-                switchTab(tabName);
-            });
-        });
-
+        // ... (Le reste du code de gestion des onglets, messages, loader reste identique) ...
         function switchTab(tab) {
-            // Retirer la classe active de tous les onglets et formulaires
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.form-content').forEach(f => f.classList.remove('active'));
             
-            // Ajouter la classe active à l'onglet et formulaire sélectionnés
             const selectedTab = document.querySelector(`[data-tab="${tab}"]`);
             const selectedForm = document.getElementById(`${tab}-form`);
             
@@ -360,20 +369,17 @@
             hideMessage();
         }
 
-        // Afficher un message
-        function showMessage(text, type) {
+        function showMessage(html, type) {
             const msg = document.getElementById('message');
-            msg.textContent = text;
+            msg.innerHTML = html;
             msg.className = `message ${type} show`;
         }
 
-        // Cacher le message
         function hideMessage() {
             const msg = document.getElementById('message');
             msg.classList.remove('show');
         }
 
-        // Afficher/cacher le loader
         function toggleLoader(show) {
             const loader = document.getElementById('loader');
             const activeForm = document.querySelector('.form-content.active');
@@ -386,46 +392,17 @@
                 if (activeForm) activeForm.style.display = 'block';
             }
         }
-
-        // Formulaire de connexion
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideMessage();
-            toggleLoader(true);
-
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-
-            try {
-                // Connexion avec Supabase Auth
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-
-                if (error) throw error;
-
-                // Récupérer le profil utilisateur
-                const profile = await getUserProfile(data.user.id);
-
-                if (!profile) {
-                    throw new Error('Profil utilisateur introuvable. Contactez l\'administrateur.');
-                }
-
-                // Redirection selon le rôle
-                showMessage('Connexion réussie ! Redirection...', 'success');
-                
-                setTimeout(async () => {
-                    await redirectByRole();
-                }, 1500);
-
-            } catch (error) {
-                toggleLoader(false);
-                showMessage(error.message || 'Erreur de connexion', 'error');
-            }
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tabName = this.getAttribute('data-tab');
+                switchTab(tabName);
+            });
         });
+        
+        // --- NOUVEAU : GESTION DU DOUBLE OPT-IN ---
 
-        // Formulaire d'inscription - VERSION SIMPLIFIÉE
+        // 1. Inscription
         document.getElementById('signup-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideMessage();
@@ -437,100 +414,146 @@
             const password = document.getElementById('signup-password').value;
 
             try {
-                // 1. Créer le compte Auth
-                const { data: authData, error: authError } = await supabase.auth.signUp({
+                // Étape 1 & 2 : Soumission et envoi de l'e-mail de vérification par Supabase
+                const { data, error } = await supabase.auth.signUp({
                     email: email,
-                    password: password
+                    password: password,
+                    options: {
+                        // Stocke le nom et prénom dans les métadonnées de l'utilisateur
+                        // Ils seront utilisés pour créer le profil après la vérification
+                        data: {
+                            prenom: prenom,
+                            nom: nom
+                        },
+                        // Redirige l'utilisateur vers une page de bienvenue après activation
+                        emailRedirectTo: `${window.location.origin}/welcome.html`
+                    }
                 });
 
-                if (authError) throw authError;
-
-                if (!authData.user) {
-                    throw new Error('Erreur lors de la création du compte');
-                }
-
-                console.log('Compte Auth créé:', authData.user.id);
-
-                // 2. Attendre que la session soit établie
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                // 3. Créer le profil directement (insertion publique autorisée)
-                const { error: profileError } = await supabase
-                    .from('users_profile')
-                    .insert({
-                        user_id: authData.user.id,
-                        prenom: prenom,
-                        nom: nom,
-                        role: 'user'
-                    });
-
-                if (profileError) {
-                    console.error('Erreur profil:', profileError);
-                    throw new Error(`Erreur lors de la création du profil: ${profileError.message}`);
-                }
-
-                console.log('Profil créé avec succès');
-
-                showMessage('Inscription réussie ! Comfirmer le lien Supabase Auth envoyé à votre email pour Finaliser Inscription Redirection...', 'success');
-
-                // 4. Redirection automatique vers index.html
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 2000);
+                if (error) throw error;
+                
+                // Ici, le compte est créé mais en attente d'activation
+                toggleLoader(false);
+                showMessage(
+                    `<strong>Inscription presque terminée !</strong><br>Un e-mail de vérification a été envoyé à <strong>${email}</strong>. Veuillez cliquer sur le lien pour activer votre compte.`,
+                    'info'
+                );
+                document.getElementById('signup-form').reset();
 
             } catch (error) {
                 toggleLoader(false);
-                console.error('Erreur complète:', error);
-                showMessage(error.message || 'Erreur lors de l\'inscription', 'error');
-                
-                // Si l'erreur vient du profil, supprimer le compte Auth créé
-                if (error.message.includes('profil')) {
-                    try {
-                        await supabase.auth.signOut();
-                    } catch (e) {
-                        console.error('Erreur lors du nettoyage:', e);
-                    }
-                }
+                showMessage(error.message || 'Une erreur est survenue lors de l\'inscription.', 'error');
             }
         });
 
-        // Formulaire de réinitialisation du mot de passe
-        document.getElementById('password-reset-form').addEventListener('submit', async (e) => {
+        // 2. Connexion (avec gestion des comptes non activés)
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideMessage();
             toggleLoader(true);
 
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    // Cas spécifique : l'utilisateur n'a pas vérifié son email
+                    if (error.message.includes('Email not confirmed')) {
+                       throw new Error('Email non confirmé. <a onclick="resendActivation(\'' + email + '\')">Renvoyer l\'e-mail d\'activation.</a>');
+                    }
+                    throw error;
+                }
+                
+                // Si la connexion réussit, on laisse onAuthStateChange gérer la redirection
+                
+            } catch (error) {
+                toggleLoader(false);
+                showMessage(error.message || 'Email ou mot de passe incorrect.', 'error');
+            }
+        });
+
+        // Fonction pour renvoyer l'email d'activation
+        async function resendActivation(email) {
+            hideMessage();
+            toggleLoader(true);
+            try {
+                const { error } = await supabase.auth.resend({
+                    type: 'signup',
+                    email: email
+                });
+                if (error) throw error;
+                toggleLoader(false);
+                showMessage(`Un nouvel e-mail d'activation a été envoyé à <strong>${email}</strong>.`, 'success');
+            } catch(error) {
+                toggleLoader(false);
+                showMessage(error.message, 'error');
+            }
+        }
+        
+        // --- NOUVEAU : GESTION DU MOT DE PASSE OUBLIÉ ---
+
+        // 1. Envoi du lien de réinitialisation
+        document.getElementById('password-reset-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+            toggleLoader(true);
             const email = document.getElementById('reset-email').value;
 
             try {
-                // Envoyer le lien de réinitialisation
                 const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                    redirectTo: `${window.location.origin}/reset-password.html`
+                    // IMPORTANT : redirectTo n'est pas nécessaire ici, Supabase va gérer l'événement
+                    // 'PASSWORD_RECOVERY' sur la page actuelle.
                 });
 
                 if (error) throw error;
 
-                // Message de succès (même si l'email n'existe pas, pour la sécurité)
+                toggleLoader(false);
                 showMessage(
-                    'Si votre email est enregistré, vous recevrez un lien de réinitialisation dans quelques minutes.',
+                    'Si cette adresse e-mail est associée à un compte, un lien de réinitialisation vient d\'être envoyé.',
                     'info'
                 );
-                
-                toggleLoader(false);
-
-                // Réinitialiser le formulaire
                 document.getElementById('password-reset-form').reset();
 
             } catch (error) {
                 toggleLoader(false);
-                console.error('Erreur:', error);
-                // Message générique pour ne pas révéler si l'email existe ou non
                 showMessage(
-                    'Si votre email est enregistré, vous recevrez un lien de réinitialisation.',
-                    'info'
+                    'Une erreur est survenue. Veuillez réessayer.',
+                    'error'
                 );
+            }
+        });
+
+        // 2. Enregistrement du nouveau mot de passe
+        document.getElementById('new-password-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+            toggleLoader(true);
+            const password = document.getElementById('new-password').value;
+            
+            try {
+                const { error } = await supabase.auth.updateUser({ password: password });
+                if (error) throw error;
+                
+                toggleLoader(false);
+                // On cache le formulaire de mot de passe et on affiche un message de succès
+                document.getElementById('update-password-form').classList.remove('active');
+                showMessage('Votre mot de passe a été mis à jour avec succès ! Vous pouvez maintenant vous connecter.', 'success');
+                // Ré-afficher les onglets et rediriger vers la connexion
+                setTimeout(() => {
+                    document.querySelectorAll('.tabs').forEach(t => t.style.display = 'flex');
+                    switchTab('connexion');
+                }, 3000);
+                
+            } catch(error) {
+                toggleLoader(false);
+                showMessage(error.message, 'error');
             }
         });
     </script>
 </body>
-    </html>
+</html>
