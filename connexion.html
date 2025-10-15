@@ -258,11 +258,11 @@
                 <form id="login-form">
                     <div class="input-group">
                         <label for="login-email">Email</label>
-                        <input type="email" id="login-email" required placeholder="exemple@email.com">
+                        <input type="email" id="login-email" required placeholder="exemple@email.com" autocomplete="email">
                     </div>
                     <div class="input-group">
                         <label for="login-password">Mot de passe</label>
-                        <input type="password" id="login-password" required placeholder="••••••••">
+                        <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
                     </div>
                     <button type="submit" class="btn">Se connecter</button>
                 </form>
@@ -277,20 +277,20 @@
                     <div class="name-group">
                         <div class="input-group">
                             <label for="signup-prenom">Prénom</label>
-                            <input type="text" id="signup-prenom" required placeholder="John">
+                            <input type="text" id="signup-prenom" required placeholder="John" autocomplete="given-name">
                         </div>
                         <div class="input-group">
                             <label for="signup-nom">Nom</label>
-                            <input type="text" id="signup-nom" required placeholder="Doe">
+                            <input type="text" id="signup-nom" required placeholder="Doe" autocomplete="family-name">
                         </div>
                     </div>
                     <div class="input-group">
                         <label for="signup-email">Email</label>
-                        <input type="email" id="signup-email" required placeholder="exemple@email.com">
+                        <input type="email" id="signup-email" required placeholder="exemple@email.com" autocomplete="email">
                     </div>
                     <div class="input-group">
                         <label for="signup-password">Mot de passe</label>
-                        <input type="password" id="signup-password" required placeholder="••••••••" minlength="6">
+                        <input type="password" id="signup-password" required placeholder="••••••••" minlength="6" autocomplete="new-password">
                     </div>
                     <button type="submit" class="btn">Créer mon compte</button>
                 </form>
@@ -304,7 +304,7 @@
                 <form id="password-reset-form">
                     <div class="input-group">
                         <label for="reset-email">Email</label>
-                        <input type="email" id="reset-email" required placeholder="exemple@email.com">
+                        <input type="email" id="reset-email" required placeholder="exemple@email.com" autocomplete="email">
                     </div>
                     <button type="submit" class="btn">Envoyer le lien</button>
                 </form>
@@ -318,7 +318,7 @@
                 <form id="new-password-form">
                     <div class="input-group">
                         <label for="new-password">Nouveau mot de passe</label>
-                        <input type="password" id="new-password" required placeholder="••••••••" minlength="6">
+                        <input type="password" id="new-password" required placeholder="••••••••" minlength="6" autocomplete="new-password">
                     </div>
                     <button type="submit" class="btn">Enregistrer le mot de passe</button>
                 </form>
@@ -328,44 +328,46 @@
 
     <script src="supabaseClient.js"></script>
     <script>
-        // --- SECTION MISE À JOUR ---
-        let supabase, getCurrentUser, getUserProfile, redirectByRole;
+        // Déclaration des variables qui seront initialisées depuis supabaseClient.js
+        let supabase, redirectByRole;
 
+        // --- GESTION CENTRALE DE L'AUTHENTIFICATION ---
         function initializeApp() {
             if (window.supabaseClient) {
-                ({ supabase, getCurrentUser, getUserProfile, redirectByRole } = window.supabaseClient);
+                // On récupère les fonctions et l'instance depuis l'objet global
+                ({ supabase, redirectByRole } = window.supabaseClient);
                 
-                // On écoute les changements d'état de l'authentification (plus robuste)
+                // onAuthStateChange est le "cerveau" qui réagit à tous les changements
+                // de connexion, déconnexion, etc. C'est la meilleure pratique.
                 supabase.auth.onAuthStateChange((event, session) => {
-                    // Cet événement se déclenche quand la session est chargée pour la première fois
+                    console.log(`Auth event: ${event}`, session);
+
+                    // Si l'utilisateur est déjà connecté au chargement de la page
                     if (event === 'INITIAL_SESSION' && session) {
-                        console.log("Session initiale chargée, redirection en cours...");
                         redirectByRole();
                     } 
-                    // Se déclenche après une connexion manuelle réussie
+                    // Si l'utilisateur vient de se connecter avec succès
                     else if (event === 'SIGNED_IN') {
-                        console.log("Utilisateur connecté, redirection en cours...");
                         redirectByRole();
                     } 
-                    // Gère la réinitialisation du mot de passe
+                    // Si l'utilisateur a cliqué sur un lien de réinitialisation de mdp
                     else if (event === 'PASSWORD_RECOVERY') {
-                        console.log("Mode de récupération du mot de passe activé.");
-                        document.querySelectorAll('.tabs').forEach(t => t.style.display = 'none');
+                        document.querySelector('.tabs').style.display = 'none';
                         switchTab('update-password');
                     }
+                    // Si l'utilisateur se déconnecte, on ne fait rien, il reste sur la page.
                 });
 
             } else {
-                setTimeout(initializeApp, 100);
+                // Si supabaseClient.js n'est pas encore chargé, on réessaie
+                setTimeout(initializeApp, 50);
             }
         }
         
-        // On appelle initializeApp une seule fois quand le DOM est prêt
-        window.addEventListener('DOMContentLoaded', initializeApp);
-        // --- FIN DE LA SECTION MISE À JOUR ---
+        // Lancer l'initialisation dès que la page est prête
+        document.addEventListener('DOMContentLoaded', initializeApp);
 
-
-        // Le reste de votre code JavaScript reste identique.
+        // --- GESTION DE L'INTERFACE UTILISATEUR (helpers) ---
         function switchTab(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.form-content').forEach(f => f.classList.remove('active'));
@@ -386,31 +388,26 @@
         }
 
         function hideMessage() {
-            const msg = document.getElementById('message');
-            msg.classList.remove('show');
+            document.getElementById('message').className = 'message';
         }
 
         function toggleLoader(show) {
             const loader = document.getElementById('loader');
             const activeForm = document.querySelector('.form-content.active');
-            
             if (show) {
-                loader.classList.add('show');
                 if (activeForm) activeForm.style.display = 'none';
+                loader.classList.add('show');
             } else {
                 loader.classList.remove('show');
                 if (activeForm) activeForm.style.display = 'block';
             }
         }
+
         document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function(e) {
-                e.preventDefault();
-                const tabName = this.getAttribute('data-tab');
-                switchTab(tabName);
-            });
+            tab.addEventListener('click', () => switchTab(tab.dataset.tab));
         });
         
-        // --- GESTION DES FORMULAIRES (INCHANGÉ) ---
+        // --- GESTION DES SOUMISSIONS DE FORMULAIRES ---
 
         // Inscription
         document.getElementById('signup-form').addEventListener('submit', async (e) => {
@@ -423,31 +420,26 @@
             const email = document.getElementById('signup-email').value;
             const password = document.getElementById('signup-password').value;
 
-            try {
-                const { data, error } = await supabase.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                        data: {
-                            prenom: prenom,
-                            nom: nom
-                        },
-                        emailRedirectTo: `${window.location.origin}/welcome.html`
-                    }
-                });
+            // L'envoi des métadonnées `prenom` et `nom` ici est la clé.
+            // Le trigger SQL `handle_new_user` les utilisera pour créer le profil.
+            const { error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: { prenom, nom },
+                    emailRedirectTo: `${window.location.origin}/welcome.html`
+                }
+            });
 
-                if (error) throw error;
-                
-                toggleLoader(false);
+            toggleLoader(false);
+            if (error) {
+                showMessage(error.message, 'error');
+            } else {
                 showMessage(
                     `<strong>Inscription presque terminée !</strong><br>Un e-mail de vérification a été envoyé à <strong>${email}</strong>. Veuillez cliquer sur le lien pour activer votre compte.`,
                     'info'
                 );
-                document.getElementById('signup-form').reset();
-
-            } catch (error) {
-                toggleLoader(false);
-                showMessage(error.message || 'Une erreur est survenue lors de l\'inscription.', 'error');
+                e.target.reset();
             }
         });
 
@@ -460,42 +452,31 @@
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
 
-            try {
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            
+            // Si la connexion réussit, on ne fait rien ici.
+            // L'événement 'SIGNED_IN' de onAuthStateChange s'occupera de la redirection.
 
-                if (error) {
-                    if (error.message.includes('Email not confirmed')) {
-                       throw new Error('Email non confirmé. <a onclick="resendActivation(\'' + email + '\')">Renvoyer l\'e-mail d\'activation.</a>');
-                    }
-                    throw error;
-                }
-                
-                // Si la connexion réussit, on laisse onAuthStateChange gérer la redirection
-                
-            } catch (error) {
+            if (error) {
                 toggleLoader(false);
-                showMessage(error.message || 'Email ou mot de passe incorrect.', 'error');
+                if (error.message.includes('Email not confirmed')) {
+                   showMessage(`Email non confirmé. <a onclick="resendActivation('${email}')">Renvoyer l'e-mail d'activation.</a>`, 'error');
+                } else {
+                   showMessage('Email ou mot de passe incorrect.', 'error');
+                }
             }
         });
 
-        // Renvoyer l'activation
+        // Renvoyer l'e-mail d'activation
         async function resendActivation(email) {
             hideMessage();
             toggleLoader(true);
-            try {
-                const { error } = await supabase.auth.resend({
-                    type: 'signup',
-                    email: email
-                });
-                if (error) throw error;
-                toggleLoader(false);
-                showMessage(`Un nouvel e-mail d'activation a été envoyé à <strong>${email}</strong>.`, 'success');
-            } catch(error) {
-                toggleLoader(false);
+            const { error } = await supabase.auth.resend({ type: 'signup', email });
+            toggleLoader(false);
+            if (error) {
                 showMessage(error.message, 'error');
+            } else {
+                showMessage(`Un nouvel e-mail d'activation a été envoyé à <strong>${email}</strong>.`, 'success');
             }
         }
         
@@ -505,25 +486,17 @@
             hideMessage();
             toggleLoader(true);
             const email = document.getElementById('reset-email').value;
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {});
 
-            try {
-                const { error } = await supabase.auth.resetPasswordForEmail(email, {});
-
-                if (error) throw error;
-
-                toggleLoader(false);
+            toggleLoader(false);
+            if (error) {
+                showMessage('Une erreur est survenue. Veuillez réessayer.', 'error');
+            } else {
                 showMessage(
                     'Si cette adresse e-mail est associée à un compte, un lien de réinitialisation vient d\'être envoyé.',
                     'info'
                 );
-                document.getElementById('password-reset-form').reset();
-
-            } catch (error) {
-                toggleLoader(false);
-                showMessage(
-                    'Une erreur est survenue. Veuillez réessayer.',
-                    'error'
-                );
+                e.target.reset();
             }
         });
 
@@ -534,21 +507,17 @@
             toggleLoader(true);
             const password = document.getElementById('new-password').value;
             
-            try {
-                const { error } = await supabase.auth.updateUser({ password: password });
-                if (error) throw error;
-                
-                toggleLoader(false);
-                document.getElementById('update-password-form').classList.remove('active');
-                showMessage('Votre mot de passe a été mis à jour avec succès ! Vous pouvez maintenant vous connecter.', 'success');
-                setTimeout(() => {
-                    document.querySelectorAll('.tabs').forEach(t => t.style.display = 'flex');
-                    switchTab('connexion');
-                }, 3000);
-                
-            } catch(error) {
-                toggleLoader(false);
+            const { error } = await supabase.auth.updateUser({ password });
+
+            toggleLoader(false);
+            if (error) {
                 showMessage(error.message, 'error');
+            } else {
+                showMessage('Votre mot de passe a été mis à jour avec succès ! Vous pouvez maintenant vous connecter.', 'success');
+                // On attend quelques secondes pour que l'utilisateur lise le message
+                setTimeout(() => {
+                    window.location.reload(); // Recharger la page pour revenir à l'état de connexion normal
+                }, 3000);
             }
         });
     </script>
