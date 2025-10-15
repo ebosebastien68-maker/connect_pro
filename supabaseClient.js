@@ -9,16 +9,29 @@ if (!window.supabaseClient) {
     const supabaseInstance = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     /**
-     * Récupère l'objet utilisateur actuellement connecté.
+     * Récupère l'objet utilisateur actuellement connecté en se basant sur la session.
+     * C'est plus robuste car elle attend l'initialisation de Supabase.
      * @returns {Promise<object|null>} L'objet utilisateur ou null s'il n'est pas connecté.
      */
     async function getCurrentUser() {
-        const { data: { user }, error } = await supabaseInstance.auth.getUser();
-        if (error) {
-            console.error('Erreur lors de la récupération de l\'utilisateur:', error.message);
+        try {
+            // getSession est la méthode recommandée pour récupérer la session et l'utilisateur
+            const { data: { session }, error } = await supabaseInstance.auth.getSession();
+            if (error) throw error;
+            
+            // Si la session n'existe pas, on retourne null explicitement
+            if (!session) {
+                console.log("Aucune session active trouvée.");
+                return null;
+            }
+            
+            // On retourne l'objet utilisateur complet
+            return session.user;
+
+        } catch (error) {
+            console.error("Erreur lors de la récupération de la session:", error.message);
             return null;
         }
-        return user;
     }
 
     /**
@@ -27,19 +40,30 @@ if (!window.supabaseClient) {
      * @returns {Promise<object|null>} L'objet profil ou null en cas d'erreur.
      */
     async function getUserProfile(userId) {
-        if (!userId) return null;
-        
-        const { data, error } = await supabaseInstance
-            .from('users_profile')
-            .select('*')
-            .eq('user_id', userId)
-            .single();
-        
-        if (error) {
-            console.error('Erreur lors de la récupération du profil:', error.message);
+        // Garde-fou : si aucun userId n'est fourni, on ne fait pas de requête
+        if (!userId) {
+            console.error("getUserProfile a été appelé sans userId.");
             return null;
         }
-        return data;
+
+        try {
+            const { data, error, status } = await supabaseInstance
+                .from('users_profile')
+                .select('*') // Vous pouvez spécifier les colonnes : `prenom, nom, role`
+                .eq('user_id', userId)
+                .single();
+
+            // Gère le cas où aucun profil n'est trouvé (erreur 406), sans bloquer l'application
+            if (error && status !== 406) {
+                throw error;
+            }
+
+            return data;
+
+        } catch (error) {
+            console.error("Erreur lors de la récupération du profil:", error.message);
+            return null;
+        }
     }
 
     /**
@@ -71,23 +95,25 @@ if (!window.supabaseClient) {
         const user = await getCurrentUser();
         
         if (!user) {
-            window.location.href = 'connexion.html';
+            // Pas d'utilisateur, on ne fait rien. La page de connexion reste affichée.
+            console.log("Redirection annulée : utilisateur non connecté.");
             return;
         }
 
         const profile = await getUserProfile(user.id);
         
         if (!profile) {
+            // Si le profil n'existe pas, c'est une erreur critique. On déconnecte.
             alert('Erreur: Profil utilisateur introuvable. Déconnexion.');
             await signOut();
-            window.location.href = 'connexion.html';
+            window.location.reload(); // Recharger la page pour refléter l'état déconnecté
             return;
         }
 
-        // Redirection simplifiée selon les rôles valides ('admin', 'user')
+        // Redirection simplifiée selon les rôles
         if (profile.role === 'admin') {
             window.location.href = 'publier.html';
-        } else { // Si ce n'est pas un admin, c'est un 'user'
+        } else {
             window.location.href = 'index.html';
         }
     }
