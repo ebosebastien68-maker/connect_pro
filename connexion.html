@@ -6,6 +6,7 @@
     <title>Connexion / Inscription</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* ... (votre CSS reste inchangé) ... */
         * {
             margin: 0;
             padding: 0;
@@ -327,35 +328,44 @@
 
     <script src="supabaseClient.js"></script>
     <script>
+        // --- SECTION MISE À JOUR ---
         let supabase, getCurrentUser, getUserProfile, redirectByRole;
 
         function initializeApp() {
             if (window.supabaseClient) {
                 ({ supabase, getCurrentUser, getUserProfile, redirectByRole } = window.supabaseClient);
-                handleAuthEvents();
+                
+                // On écoute les changements d'état de l'authentification (plus robuste)
+                supabase.auth.onAuthStateChange((event, session) => {
+                    // Cet événement se déclenche quand la session est chargée pour la première fois
+                    if (event === 'INITIAL_SESSION' && session) {
+                        console.log("Session initiale chargée, redirection en cours...");
+                        redirectByRole();
+                    } 
+                    // Se déclenche après une connexion manuelle réussie
+                    else if (event === 'SIGNED_IN') {
+                        console.log("Utilisateur connecté, redirection en cours...");
+                        redirectByRole();
+                    } 
+                    // Gère la réinitialisation du mot de passe
+                    else if (event === 'PASSWORD_RECOVERY') {
+                        console.log("Mode de récupération du mot de passe activé.");
+                        document.querySelectorAll('.tabs').forEach(t => t.style.display = 'none');
+                        switchTab('update-password');
+                    }
+                });
+
             } else {
                 setTimeout(initializeApp, 100);
             }
         }
-
-        // Gérer les événements d'authentification (connexion, changement de mot de passe)
-        function handleAuthEvents() {
-            supabase.auth.onAuthStateChange((event, session) => {
-                if (event === 'PASSWORD_RECOVERY') {
-                    // L'utilisateur a cliqué sur le lien de réinitialisation
-                    // On affiche le formulaire pour changer le mot de passe
-                    document.querySelectorAll('.tabs').forEach(t => t.style.display = 'none');
-                    switchTab('update-password');
-                } else if (event === 'SIGNED_IN') {
-                    // Si l'utilisateur se connecte, on redirige
-                    redirectByRole();
-                }
-            });
-        }
-
+        
+        // On appelle initializeApp une seule fois quand le DOM est prêt
         window.addEventListener('DOMContentLoaded', initializeApp);
+        // --- FIN DE LA SECTION MISE À JOUR ---
 
-        // ... (Le reste du code de gestion des onglets, messages, loader reste identique) ...
+
+        // Le reste de votre code JavaScript reste identique.
         function switchTab(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.form-content').forEach(f => f.classList.remove('active'));
@@ -400,9 +410,9 @@
             });
         });
         
-        // --- NOUVEAU : GESTION DU DOUBLE OPT-IN ---
+        // --- GESTION DES FORMULAIRES (INCHANGÉ) ---
 
-        // 1. Inscription
+        // Inscription
         document.getElementById('signup-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideMessage();
@@ -414,25 +424,20 @@
             const password = document.getElementById('signup-password').value;
 
             try {
-                // Étape 1 & 2 : Soumission et envoi de l'e-mail de vérification par Supabase
                 const { data, error } = await supabase.auth.signUp({
                     email: email,
                     password: password,
                     options: {
-                        // Stocke le nom et prénom dans les métadonnées de l'utilisateur
-                        // Ils seront utilisés pour créer le profil après la vérification
                         data: {
                             prenom: prenom,
                             nom: nom
                         },
-                        // Redirige l'utilisateur vers une page de bienvenue après activation
                         emailRedirectTo: `${window.location.origin}/welcome.html`
                     }
                 });
 
                 if (error) throw error;
                 
-                // Ici, le compte est créé mais en attente d'activation
                 toggleLoader(false);
                 showMessage(
                     `<strong>Inscription presque terminée !</strong><br>Un e-mail de vérification a été envoyé à <strong>${email}</strong>. Veuillez cliquer sur le lien pour activer votre compte.`,
@@ -446,7 +451,7 @@
             }
         });
 
-        // 2. Connexion (avec gestion des comptes non activés)
+        // Connexion
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideMessage();
@@ -462,7 +467,6 @@
                 });
 
                 if (error) {
-                    // Cas spécifique : l'utilisateur n'a pas vérifié son email
                     if (error.message.includes('Email not confirmed')) {
                        throw new Error('Email non confirmé. <a onclick="resendActivation(\'' + email + '\')">Renvoyer l\'e-mail d\'activation.</a>');
                     }
@@ -477,7 +481,7 @@
             }
         });
 
-        // Fonction pour renvoyer l'email d'activation
+        // Renvoyer l'activation
         async function resendActivation(email) {
             hideMessage();
             toggleLoader(true);
@@ -495,9 +499,7 @@
             }
         }
         
-        // --- NOUVEAU : GESTION DU MOT DE PASSE OUBLIÉ ---
-
-        // 1. Envoi du lien de réinitialisation
+        // Envoi du lien de réinitialisation
         document.getElementById('password-reset-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideMessage();
@@ -505,10 +507,7 @@
             const email = document.getElementById('reset-email').value;
 
             try {
-                const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                    // IMPORTANT : redirectTo n'est pas nécessaire ici, Supabase va gérer l'événement
-                    // 'PASSWORD_RECOVERY' sur la page actuelle.
-                });
+                const { error } = await supabase.auth.resetPasswordForEmail(email, {});
 
                 if (error) throw error;
 
@@ -528,7 +527,7 @@
             }
         });
 
-        // 2. Enregistrement du nouveau mot de passe
+        // Enregistrement du nouveau mot de passe
         document.getElementById('new-password-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideMessage();
@@ -540,10 +539,8 @@
                 if (error) throw error;
                 
                 toggleLoader(false);
-                // On cache le formulaire de mot de passe et on affiche un message de succès
                 document.getElementById('update-password-form').classList.remove('active');
                 showMessage('Votre mot de passe a été mis à jour avec succès ! Vous pouvez maintenant vous connecter.', 'success');
-                // Ré-afficher les onglets et rediriger vers la connexion
                 setTimeout(() => {
                     document.querySelectorAll('.tabs').forEach(t => t.style.display = 'flex');
                     switchTab('connexion');
