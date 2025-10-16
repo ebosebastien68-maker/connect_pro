@@ -1,1 +1,33 @@
+<div class="settings-card">
+    <h2><i class="fas fa-user-edit"></i> Modifier mes informations</h2>
+    <div class="form-group">
+        <label for="settings-prenom">Prénom</label>
+        <input type="text" id="settings-prenom" placeholder="Votre prénom">
+    </div>
+    <div class="form-group">
+        <label for="settings-nom">Nom</label>
+        <input type="text" id="settings-nom" placeholder="Votre nom">
+    </div>
+    <div class="form-group">
+        <label for="settings-current-password-info">Mot de passe actuel (obligatoire pour valider)</label>
+        <input type="password" id="settings-current-password-info" placeholder="••••••••">
+    </div>
+    <button id="save-info-btn" class="settings-btn">Enregistrer les modifications</button>
+    <div id="info-feedback" class="feedback-message" style="display: block;"></div>
+</div>
 
+<div class="settings-card danger-zone">
+    <h2><i class="fas fa-exclamation-triangle"></i> Zone de danger</h2>
+    <h3>Supprimer mon compte</h3>
+    <p>Cette action est irréversible. Toutes vos données, articles et commentaires seront supprimés définitivement.</p>
+    <p>Pour confirmer, veuillez recopier (<strong>sans copier-coller</strong>) le texte ci-dessous dans le champ :</p>
+    
+    <div id="delete-string" class="delete-text-block">₽ o hn ₹ ₿₱ ¶v; ”(t“ >< æ₿β ϟϛχ ποιι θετψψ ηφσϟνχ ζδσξλππ φδρψη κξγφϛ βνμκ ϡλλπο γφζϛϛφθσ ∩∋∈→8≡⊷ εε∨ ⊥∡⌀∞ℝℕ∇ 23ϡ⊗⊙⊖⊕∀789↕↑↔∨∧⌈⌉∡⌀√</div>
+
+    <div class="form-group">
+        <label for="delete-confirm-text">Recopiez le texte ici</label>
+        <input type="text" id="delete-confirm-text" autocomplete="off" onpaste="return false;" ondrop="return false;">
+    </div>
+    <button id="validate-delete-btn" class="settings-btn" disabled>Valider et passer à l'étape finale</button>
+    <div id="delete-feedback" class="feedback-message" style="display: block;"></div>
+</div>
