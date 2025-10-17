@@ -1,7 +1,13 @@
-// commentaires.js - Widget de commentaires réutilisable
+// commentaires.js - Widget de commentaires réutilisable avec rechargement optimisé
 
 window.CommentsWidget = {
-    async render(container, articleId, comments, currentUser) {
+    currentArticleId: null,
+    refreshCallback: null,
+
+    async render(container, articleId, comments, currentUser, userProfile, refreshCallback) {
+        this.currentArticleId = articleId;
+        this.refreshCallback = refreshCallback;
+
         container.innerHTML = `
             <style>
                 .comments-widget {
@@ -10,8 +16,20 @@ window.CommentsWidget = {
                 
                 .comment-item {
                     padding: 15px;
-                    border-bottom: 1px solid #f0f0f0;
+                    border-bottom: 1px solid var(--border-color);
                     position: relative;
+                    animation: slideIn 0.3s ease;
+                }
+
+                @keyframes slideIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(10px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
                 }
                 
                 .comment-header {
@@ -25,28 +43,29 @@ window.CommentsWidget = {
                     width: 35px;
                     height: 35px;
                     border-radius: 50%;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    color: white;
+                    color: #1a1a1a;
                     font-weight: bold;
                     font-size: 14px;
+                    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
                 }
                 
                 .comment-author {
                     font-weight: 600;
-                    color: #333;
+                    color: var(--text-primary);
                 }
                 
                 .comment-date {
                     font-size: 12px;
-                    color: #999;
+                    color: var(--text-tertiary);
                     margin-left: auto;
                 }
                 
                 .comment-text {
-                    color: #333;
+                    color: var(--text-primary);
                     margin: 8px 0;
                     padding-left: 45px;
                     line-height: 1.5;
@@ -61,19 +80,21 @@ window.CommentsWidget = {
                 .comment-btn {
                     background: none;
                     border: none;
-                    color: #667eea;
+                    color: #ffd700;
                     font-size: 13px;
                     cursor: pointer;
                     font-weight: 600;
+                    transition: all 0.3s;
                 }
                 
                 .comment-btn:hover {
                     text-decoration: underline;
+                    transform: translateX(3px);
                 }
                 
                 .replies-container {
                     margin-left: 45px;
-                    border-left: 2px solid #f0f0f0;
+                    border-left: 2px solid var(--border-color);
                     padding-left: 15px;
                     margin-top: 10px;
                 }
@@ -84,52 +105,96 @@ window.CommentsWidget = {
                 
                 .comment-input-box {
                     margin-top: 15px;
+                    padding: 15px;
+                    background: var(--bg-primary);
+                    border-radius: 12px;
                 }
                 
                 .comment-textarea {
                     width: 100%;
                     padding: 12px;
-                    border: 2px solid #e0e0e0;
+                    border: 2px solid var(--border-color);
                     border-radius: 10px;
                     font-family: inherit;
                     font-size: 14px;
                     min-height: 80px;
                     resize: vertical;
                     transition: border-color 0.3s;
+                    background: var(--bg-secondary);
+                    color: var(--text-primary);
                 }
                 
                 .comment-textarea:focus {
                     outline: none;
-                    border-color: #667eea;
+                    border-color: #ffd700;
+                    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
                 }
                 
                 .comment-submit {
                     margin-top: 10px;
                     padding: 10px 20px;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
+                    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+                    color: #1a1a1a;
                     border: none;
                     border-radius: 8px;
                     cursor: pointer;
                     font-weight: 600;
-                    transition: transform 0.2s;
+                    transition: all 0.3s;
+                    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
                 }
                 
                 .comment-submit:hover {
                     transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+                }
+
+                .comment-submit:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                    transform: none;
                 }
                 
                 .no-comments {
                     text-align: center;
                     padding: 40px 20px;
-                    color: #999;
+                    color: var(--text-tertiary);
+                }
+
+                .no-comments i {
+                    font-size: 40px;
+                    margin-bottom: 10px;
+                    display: block;
+                    opacity: 0.5;
+                }
+
+                .comment-loading {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    padding: 20px;
+                    gap: 10px;
+                    color: var(--text-secondary);
+                }
+
+                .comment-spinner {
+                    border: 2px solid var(--border-color);
+                    border-top: 2px solid #ffd700;
+                    border-radius: 50%;
+                    width: 20px;
+                    height: 20px;
+                    animation: spin 1s linear infinite;
+                }
+
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
                 }
             </style>
             
             <div class="comments-widget">
                 ${comments.length === 0 ? `
                     <div class="no-comments">
-                        <i class="fas fa-comments" style="font-size: 40px; margin-bottom: 10px; display: block;"></i>
+                        <i class="fas fa-comments"></i>
                         <p>Aucun commentaire pour le moment</p>
                         <p style="font-size: 13px; margin-top: 5px;">Soyez le premier à commenter !</p>
                     </div>
@@ -147,11 +212,19 @@ window.CommentsWidget = {
                             placeholder="Écrivez votre commentaire..."></textarea>
                         <button 
                             class="comment-submit" 
+                            id="comment-submit-${articleId}"
                             onclick="CommentsWidget.submitComment('${articleId}')">
                             <i class="fas fa-paper-plane"></i> Publier
                         </button>
                     </div>
-                ` : ''}
+                ` : `
+                    <div class="comment-input-box">
+                        <p style="text-align: center; color: var(--text-secondary);">
+                            <i class="fas fa-lock"></i> 
+                            Connectez-vous pour commenter
+                        </p>
+                    </div>
+                `}
             </div>
         `;
     },
@@ -202,6 +275,7 @@ window.CommentsWidget = {
                             style="min-height: 60px;"></textarea>
                         <button 
                             class="comment-submit" 
+                            id="reply-submit-${comment.session_id}"
                             onclick="CommentsWidget.submitReply('${comment.session_id}')"
                             style="margin-top: 8px;">
                             <i class="fas fa-paper-plane"></i> Répondre
@@ -236,6 +310,7 @@ window.CommentsWidget = {
     async submitComment(articleId) {
         const { supabase, getCurrentUser } = window.supabaseClient;
         const input = document.getElementById(`comment-input-${articleId}`);
+        const submitBtn = document.getElementById(`comment-submit-${articleId}`);
         const texte = input.value.trim();
 
         if (!texte) {
@@ -246,9 +321,14 @@ window.CommentsWidget = {
         try {
             const user = await getCurrentUser();
             if (!user) {
-                 alert('Vous devez être connecté pour commenter.');
-                 return;
+                alert('Vous devez être connecté pour commenter.');
+                window.location.href = 'connexion.html';
+                return;
             }
+            
+            // Désactiver le bouton et afficher un loader
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="comment-spinner"></div> Publication...';
             
             await supabase
                 .from('sessions_commentaires')
@@ -258,17 +338,29 @@ window.CommentsWidget = {
                     texte: texte
                 });
 
-            location.reload();
+            // Vider le champ de saisie
+            input.value = '';
+
+            // Recharger uniquement les commentaires au lieu de toute la page
+            if (this.refreshCallback) {
+                await this.refreshCallback(articleId);
+            } else {
+                // Fallback si le callback n'est pas défini
+                location.reload();
+            }
 
         } catch (error) {
             console.error('Erreur:', error);
             alert('Erreur lors de la publication du commentaire');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publier';
         }
     },
 
     async submitReply(sessionId) {
         const { supabase, getCurrentUser } = window.supabaseClient;
         const input = document.getElementById(`reply-input-${sessionId}`);
+        const submitBtn = document.getElementById(`reply-submit-${sessionId}`);
         const texte = input.value.trim();
 
         if (!texte) {
@@ -279,9 +371,14 @@ window.CommentsWidget = {
         try {
             const user = await getCurrentUser();
             if (!user) {
-                 alert('Vous devez être connecté pour répondre.');
-                 return;
+                alert('Vous devez être connecté pour répondre.');
+                window.location.href = 'connexion.html';
+                return;
             }
+
+            // Désactiver le bouton et afficher un loader
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="comment-spinner"></div> Publication...';
 
             await supabase
                 .from('session_reponses')
@@ -291,17 +388,43 @@ window.CommentsWidget = {
                     texte: texte
                 });
 
-            location.reload();
+            // Vider le champ de saisie
+            input.value = '';
+
+            // Recharger uniquement les commentaires
+            if (this.refreshCallback && this.currentArticleId) {
+                await this.refreshCallback(this.currentArticleId);
+            } else {
+                // Fallback
+                location.reload();
+            }
 
         } catch (error) {
             console.error('Erreur:', error);
             alert('Erreur lors de la publication de la réponse');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Répondre';
         }
     },
 
     toggleReplyBox(sessionId) {
         const box = document.getElementById(`reply-box-${sessionId}`);
-        box.style.display = box.style.display === 'none' ? 'block' : 'none';
+        const isVisible = box.style.display !== 'none';
+        
+        // Fermer toutes les autres boîtes de réponse
+        document.querySelectorAll('[id^="reply-box-"]').forEach(b => {
+            if (b.id !== `reply-box-${sessionId}`) {
+                b.style.display = 'none';
+            }
+        });
+        
+        box.style.display = isVisible ? 'none' : 'block';
+        
+        // Focus sur le textarea si on l'ouvre
+        if (!isVisible) {
+            const textarea = document.getElementById(`reply-input-${sessionId}`);
+            setTimeout(() => textarea.focus(), 100);
+        }
     },
 
     toggleReplies(sessionId) {
