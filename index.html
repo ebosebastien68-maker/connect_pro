@@ -440,8 +440,8 @@
         }
 
         @keyframes pulse {
-            50%, 100% { transform: scale(1); }
-            50% { transform: scale(1.15); }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
 
         .menu-dropdown {
@@ -451,12 +451,12 @@
         .menu-content {
             display: none;
             position: absolute;
-            top: 60px;
+            top: 55px;
             right: 0;
             background: var(--bg-secondary);
-            border-radius: 15px;
+            border-radius: 12px;
             box-shadow: var(--shadow-lg);
-            min-width: 220px;
+            min-width: 200px;
             overflow: hidden;
             animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             border: 2px solid rgba(255, 215, 0, 0.2);
