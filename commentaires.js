@@ -8,6 +8,10 @@ window.CommentsWidget = {
         this.currentArticleId = articleId;
         this.refreshCallback = refreshCallback;
 
+        // Sauvegarder la position de scroll actuelle
+        const scrollPosition = container.scrollTop || 0;
+        const wasScrolledToBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
+
         container.innerHTML = `
             <style>
                 .comments-widget {
@@ -18,18 +22,6 @@ window.CommentsWidget = {
                     padding: 15px;
                     border-bottom: 1px solid var(--border-color);
                     position: relative;
-                    animation: slideIn 0.3s ease;
-                }
-
-                @keyframes slideIn {
-                    from {
-                        opacity: 0;
-                        transform: translateY(10px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
                 }
                 
                 .comment-header {
@@ -189,6 +181,31 @@ window.CommentsWidget = {
                     0% { transform: rotate(0deg); }
                     100% { transform: rotate(360deg); }
                 }
+
+                .comment-success-message {
+                    background: rgba(76, 175, 80, 0.1);
+                    border: 2px solid #4caf50;
+                    color: #4caf50;
+                    padding: 12px 15px;
+                    border-radius: 8px;
+                    margin-bottom: 15px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    font-size: 14px;
+                    animation: slideDown 0.3s ease;
+                }
+
+                @keyframes slideDown {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-10px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
             </style>
             
             <div class="comments-widget">
@@ -227,6 +244,17 @@ window.CommentsWidget = {
                 `}
             </div>
         `;
+
+        // Restaurer la position de scroll
+        setTimeout(() => {
+            if (wasScrolledToBottom) {
+                // Si on était en bas, rester en bas (pour voir le nouveau commentaire)
+                container.scrollTop = container.scrollHeight;
+            } else {
+                // Sinon restaurer la position exacte
+                container.scrollTop = scrollPosition;
+            }
+        }, 50);
     },
 
     async renderComments(comments, articleId, currentUser) {
@@ -328,6 +356,7 @@ window.CommentsWidget = {
             
             // Désactiver le bouton et afficher un loader
             submitBtn.disabled = true;
+            const originalContent = submitBtn.innerHTML;
             submitBtn.innerHTML = '<div class="comment-spinner"></div> Publication...';
             
             await supabase
@@ -338,16 +367,20 @@ window.CommentsWidget = {
                     texte: texte
                 });
 
-            // Vider le champ de saisie
+            // Vider le champ de saisie immédiatement
             input.value = '';
 
-            // Recharger uniquement les commentaires au lieu de toute la page
+            // Afficher un message de succès temporaire
+            this.showSuccessMessage(articleId);
+
+            // Recharger uniquement les commentaires (la section reste ouverte)
             if (this.refreshCallback) {
                 await this.refreshCallback(articleId);
-            } else {
-                // Fallback si le callback n'est pas défini
-                location.reload();
             }
+
+            // Réactiver le bouton
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
 
         } catch (error) {
             console.error('Erreur:', error);
@@ -378,6 +411,7 @@ window.CommentsWidget = {
 
             // Désactiver le bouton et afficher un loader
             submitBtn.disabled = true;
+            const originalContent = submitBtn.innerHTML;
             submitBtn.innerHTML = '<div class="comment-spinner"></div> Publication...';
 
             await supabase
@@ -388,16 +422,27 @@ window.CommentsWidget = {
                     texte: texte
                 });
 
-            // Vider le champ de saisie
+            // Vider le champ de saisie immédiatement
             input.value = '';
 
-            // Recharger uniquement les commentaires
+            // Afficher un message de succès
+            this.showSuccessMessage(this.currentArticleId);
+
+            // Recharger uniquement les commentaires (garde la section ouverte)
             if (this.refreshCallback && this.currentArticleId) {
                 await this.refreshCallback(this.currentArticleId);
-            } else {
-                // Fallback
-                location.reload();
+                // Rouvrir automatiquement les réponses du commentaire
+                setTimeout(() => {
+                    const repliesContainer = document.getElementById(`replies-${sessionId}`);
+                    if (repliesContainer) {
+                        repliesContainer.style.display = 'block';
+                    }
+                }, 100);
             }
+
+            // Réactiver le bouton
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
 
         } catch (error) {
             console.error('Erreur:', error);
@@ -405,6 +450,29 @@ window.CommentsWidget = {
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Répondre';
         }
+    },
+
+    showSuccessMessage(articleId) {
+        const widget = document.querySelector(`#comments-${articleId} .comments-widget`);
+        if (!widget) return;
+
+        // Supprimer les anciens messages
+        const oldMessages = widget.querySelectorAll('.comment-success-message');
+        oldMessages.forEach(msg => msg.remove());
+
+        // Créer le message de succès
+        const message = document.createElement('div');
+        message.className = 'comment-success-message';
+        message.innerHTML = '<i class="fas fa-check-circle"></i> Commentaire publié avec succès !';
+        
+        widget.insertBefore(message, widget.firstChild);
+
+        // Supprimer après 3 secondes
+        setTimeout(() => {
+            message.style.opacity = '0';
+            message.style.transition = 'opacity 0.3s';
+            setTimeout(() => message.remove(), 300);
+        }, 3000);
     },
 
     toggleReplyBox(sessionId) {
@@ -429,7 +497,19 @@ window.CommentsWidget = {
 
     toggleReplies(sessionId) {
         const replies = document.getElementById(`replies-${sessionId}`);
-        replies.style.display = replies.style.display === 'none' ? 'block' : 'none';
+        const isVisible = replies.style.display !== 'none';
+        replies.style.display = isVisible ? 'none' : 'block';
+        
+        // Animer l'ouverture
+        if (!isVisible) {
+            replies.style.opacity = '0';
+            replies.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+                replies.style.transition = 'all 0.3s ease';
+                replies.style.opacity = '1';
+                replies.style.transform = 'translateY(0)';
+            }, 10);
+        }
     },
 
     formatDate(dateString) {
