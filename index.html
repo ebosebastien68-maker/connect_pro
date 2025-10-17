@@ -23,7 +23,7 @@
             --shadow-sm: 0 2px 10px rgba(0,0,0,0.08);
             --shadow-md: 0 2px 15px rgba(0,0,0,0.1);
             --shadow-lg: 0 4px 20px rgba(0,0,0,0.15);
-            --navbar-height: 60px;
+            --navbar-height: 65px;
             --navbar-gradient: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
             --accent-color: #FFD700;
             --accent-hover: #FFC700;
@@ -441,25 +441,27 @@
 
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            50% { transform: scale(1.15); }
         }
 
         .menu-dropdown {
             position: relative;
+            z-index: 995;
         }
 
         .menu-content {
             display: none;
             position: absolute;
-            top: 55px;
+            top: 60px;
             right: 0;
             background: var(--bg-secondary);
-            border-radius: 12px;
+            border-radius: 15px;
             box-shadow: var(--shadow-lg);
-            min-width: 200px;
+            min-width: 220px;
             overflow: hidden;
             animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             border: 2px solid rgba(255, 215, 0, 0.2);
+            z-index: 995;
         }
 
         .menu-content.show {
