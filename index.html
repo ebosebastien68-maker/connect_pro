@@ -1449,7 +1449,23 @@
                     return;
                 }
                 allArticles = articles;
-                displayArticles(articles);
+                
+                // Charger les réactions de l'utilisateur
+                if (currentUser) {
+                    const { data: userReactions } = await supabase
+                        .from('article_reactions')
+                        .select('article_id, reaction_type')
+                        .eq('user_id', currentUser.id);
+                    
+                    // Associer les réactions aux articles
+                    allArticles.forEach(article => {
+                        article.userReactions = userReactions
+                            ? userReactions.filter(r => r.article_id === article.article_id)
+                            : [];
+                    });
+                }
+                
+                displayArticles(allArticles);
             } catch (error) {
                 console.error('Erreur:', error);
                 document.getElementById('loader').innerHTML = '<p style="color: red;">Erreur de chargement</p>';
@@ -1482,6 +1498,14 @@
             const images = article.article_images || [];
             const videos = article.article_videos || [];
             let imageClass = images.length === 1 ? 'single' : (images.length === 2 ? 'double' : (images.length > 2 ? 'multiple' : ''));
+            
+            // Vérifier les réactions de l'utilisateur
+            const userReactions = article.userReactions || [];
+            const hasLiked = userReactions.some(r => r.reaction_type === 'like');
+            const hasLoved = userReactions.some(r => r.reaction_type === 'love');
+            const hasLaughed = userReactions.some(r => r.reaction_type === 'rire');
+            const hasAngry = userReactions.some(r => r.reaction_type === 'colere');
+            
             const imagesHTML = images.length > 0 ? `
                 <div class="article-images ${imageClass}">
                     ${images.map(img => `<img src="${img.image_url}" alt="Image">`).join('')}
@@ -1532,16 +1556,16 @@
                     ${linksHTML}
                 </div>
                 <div class="reactions">
-                    <button class="reaction-btn" onclick="handleReaction('${article.article_id}', 'like')">
+                    <button class="reaction-btn ${hasLiked ? 'active' : ''}" onclick="handleReaction('${article.article_id}', 'like')">
                         <i class="fas fa-thumbs-up"></i><span>${article.reaction_like || 0}</span>
                     </button>
-                    <button class="reaction-btn" onclick="handleReaction('${article.article_id}', 'love')">
+                    <button class="reaction-btn ${hasLoved ? 'active' : ''}" onclick="handleReaction('${article.article_id}', 'love')">
                         <i class="fas fa-heart"></i><span>${article.reaction_love || 0}</span>
                     </button>
-                    <button class="reaction-btn" onclick="handleReaction('${article.article_id}', 'rire')">
+                    <button class="reaction-btn ${hasLaughed ? 'active' : ''}" onclick="handleReaction('${article.article_id}', 'rire')">
                         <i class="fas fa-laugh"></i><span>${article.reaction_rire || 0}</span>
                     </button>
-                    <button class="reaction-btn" onclick="handleReaction('${article.article_id}', 'colere')">
+                    <button class="reaction-btn ${hasAngry ? 'active' : ''}" onclick="handleReaction('${article.article_id}', 'colere')">
                         <i class="fas fa-angry"></i><span>${article.reaction_colere || 0}</span>
                     </button>
                 </div>
