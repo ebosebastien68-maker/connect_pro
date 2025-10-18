@@ -6,7 +6,6 @@
     <title>Connexion / Inscription</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ... (votre CSS reste inchangé) ... */
         * {
             margin: 0;
             padding: 0;
@@ -144,7 +143,6 @@
             margin-bottom: 20px;
             text-align: center;
             display: none;
-            line-height: 1.5;
         }
 
         .message.error {
@@ -164,16 +162,9 @@
             color: #1976d2;
             border: 1px solid #bbdefb;
         }
-        
+
         .message.show {
             display: block;
-        }
-
-        .message a {
-            color: inherit;
-            font-weight: bold;
-            text-decoration: underline;
-            cursor: pointer;
         }
 
         .loader {
@@ -246,23 +237,26 @@
         </div>
 
         <div class="form-container">
+            <!-- Message de notification -->
             <div id="message" class="message"></div>
             
+            <!-- Loader -->
             <div id="loader" class="loader">
                 <div class="spinner"></div>
                 <p style="margin-top: 10px; color: #666;">Chargement...</p>
             </div>
 
+            <!-- Formulaire de Connexion -->
             <div id="connexion-form" class="form-content active">
                 <h2>Bon retour !</h2>
                 <form id="login-form">
                     <div class="input-group">
                         <label for="login-email">Email</label>
-                        <input type="email" id="login-email" required placeholder="exemple@email.com" autocomplete="email">
+                        <input type="email" id="login-email" required placeholder="exemple@email.com">
                     </div>
                     <div class="input-group">
                         <label for="login-password">Mot de passe</label>
-                        <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
+                        <input type="password" id="login-password" required placeholder="••••••••">
                     </div>
                     <button type="submit" class="btn">Se connecter</button>
                 </form>
@@ -271,40 +265,42 @@
                 </div>
             </div>
 
+            <!-- Formulaire d'Inscription -->
             <div id="inscription-form" class="form-content">
                 <h2>Créer un compte</h2>
                 <form id="signup-form">
                     <div class="name-group">
                         <div class="input-group">
                             <label for="signup-prenom">Prénom</label>
-                            <input type="text" id="signup-prenom" required placeholder="John" autocomplete="given-name">
+                            <input type="text" id="signup-prenom" required placeholder="John">
                         </div>
                         <div class="input-group">
                             <label for="signup-nom">Nom</label>
-                            <input type="text" id="signup-nom" required placeholder="Doe" autocomplete="family-name">
+                            <input type="text" id="signup-nom" required placeholder="Doe">
                         </div>
                     </div>
                     <div class="input-group">
                         <label for="signup-email">Email</label>
-                        <input type="email" id="signup-email" required placeholder="exemple@email.com" autocomplete="email">
+                        <input type="email" id="signup-email" required placeholder="exemple@email.com">
                     </div>
                     <div class="input-group">
                         <label for="signup-password">Mot de passe</label>
-                        <input type="password" id="signup-password" required placeholder="••••••••" minlength="6" autocomplete="new-password">
+                        <input type="password" id="signup-password" required placeholder="••••••••" minlength="6">
                     </div>
-                    <button type="submit" class="btn">Créer mon compte</button>
+                    <button type="submit" class="btn">S'inscrire</button>
                 </form>
             </div>
 
+            <!-- Formulaire Mot de passe oublié -->
             <div id="reset-form" class="form-content">
                 <h2>Réinitialiser le mot de passe</h2>
                 <div class="info-text">
-                    Entrez votre adresse e-mail. Si un compte y est associé, vous recevrez un lien pour créer un nouveau mot de passe.
+                    Entrez votre adresse email. Si elle est enregistrée dans notre système, vous recevrez un lien de vérification pour réinitialiser votre mot de passe.
                 </div>
                 <form id="password-reset-form">
                     <div class="input-group">
                         <label for="reset-email">Email</label>
-                        <input type="email" id="reset-email" required placeholder="exemple@email.com" autocomplete="email">
+                        <input type="email" id="reset-email" required placeholder="exemple@email.com">
                     </div>
                     <button type="submit" class="btn">Envoyer le lien</button>
                 </form>
@@ -312,66 +308,49 @@
                     <a href="#" onclick="switchTab('connexion'); return false;">Retour à la connexion</a>
                 </div>
             </div>
-            
-            <div id="update-password-form" class="form-content">
-                <h2>Créez votre nouveau mot de passe</h2>
-                <form id="new-password-form">
-                    <div class="input-group">
-                        <label for="new-password">Nouveau mot de passe</label>
-                        <input type="password" id="new-password" required placeholder="••••••••" minlength="6" autocomplete="new-password">
-                    </div>
-                    <button type="submit" class="btn">Enregistrer le mot de passe</button>
-                </form>
-            </div>
         </div>
     </div>
 
     <script src="supabaseClient.js"></script>
     <script>
-        // Déclaration des variables qui seront initialisées depuis supabaseClient.js
-        let supabase, redirectByRole;
+        // Attendre que supabaseClient soit chargé
+        let supabase, getCurrentUser, getUserProfile, redirectByRole;
 
-        // --- GESTION CENTRALE DE L'AUTHENTIFICATION ---
         function initializeApp() {
             if (window.supabaseClient) {
-                // On récupère les fonctions et l'instance depuis l'objet global
-                ({ supabase, redirectByRole } = window.supabaseClient);
-                
-                // onAuthStateChange est le "cerveau" qui réagit à tous les changements
-                // de connexion, déconnexion, etc. C'est la meilleure pratique.
-                supabase.auth.onAuthStateChange((event, session) => {
-                    console.log(`Auth event: ${event}`, session);
-
-                    // Si l'utilisateur est déjà connecté au chargement de la page
-                    if (event === 'INITIAL_SESSION' && session) {
-                        redirectByRole();
-                    } 
-                    // Si l'utilisateur vient de se connecter avec succès
-                    else if (event === 'SIGNED_IN') {
-                        redirectByRole();
-                    } 
-                    // Si l'utilisateur a cliqué sur un lien de réinitialisation de mdp
-                    else if (event === 'PASSWORD_RECOVERY') {
-                        document.querySelector('.tabs').style.display = 'none';
-                        switchTab('update-password');
-                    }
-                    // Si l'utilisateur se déconnecte, on ne fait rien, il reste sur la page.
-                });
-
+                ({ supabase, getCurrentUser, getUserProfile, redirectByRole } = window.supabaseClient);
+                checkIfLoggedIn();
             } else {
-                // Si supabaseClient.js n'est pas encore chargé, on réessaie
-                setTimeout(initializeApp, 50);
+                setTimeout(initializeApp, 100);
             }
         }
-        
-        // Lancer l'initialisation dès que la page est prête
-        document.addEventListener('DOMContentLoaded', initializeApp);
 
-        // --- GESTION DE L'INTERFACE UTILISATEUR (helpers) ---
+        // Vérifier si déjà connecté au chargement
+        async function checkIfLoggedIn() {
+            const user = await getCurrentUser();
+            if (user) {
+                await redirectByRole();
+            }
+        }
+
+        // Initialiser l'app
+        window.addEventListener('DOMContentLoaded', initializeApp);
+
+        // Gestion des onglets
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tabName = this.getAttribute('data-tab');
+                switchTab(tabName);
+            });
+        });
+
         function switchTab(tab) {
+            // Retirer la classe active de tous les onglets et formulaires
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.form-content').forEach(f => f.classList.remove('active'));
             
+            // Ajouter la classe active à l'onglet et formulaire sélectionnés
             const selectedTab = document.querySelector(`[data-tab="${tab}"]`);
             const selectedForm = document.getElementById(`${tab}-form`);
             
@@ -381,35 +360,72 @@
             hideMessage();
         }
 
-        function showMessage(html, type) {
+        // Afficher un message
+        function showMessage(text, type) {
             const msg = document.getElementById('message');
-            msg.innerHTML = html;
+            msg.textContent = text;
             msg.className = `message ${type} show`;
         }
 
+        // Cacher le message
         function hideMessage() {
-            document.getElementById('message').className = 'message';
+            const msg = document.getElementById('message');
+            msg.classList.remove('show');
         }
 
+        // Afficher/cacher le loader
         function toggleLoader(show) {
             const loader = document.getElementById('loader');
             const activeForm = document.querySelector('.form-content.active');
+            
             if (show) {
-                if (activeForm) activeForm.style.display = 'none';
                 loader.classList.add('show');
+                if (activeForm) activeForm.style.display = 'none';
             } else {
                 loader.classList.remove('show');
                 if (activeForm) activeForm.style.display = 'block';
             }
         }
 
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => switchTab(tab.dataset.tab));
-        });
-        
-        // --- GESTION DES SOUMISSIONS DE FORMULAIRES ---
+        // Formulaire de connexion
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+            toggleLoader(true);
 
-        // Inscription
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                // Connexion avec Supabase Auth
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) throw error;
+
+                // Récupérer le profil utilisateur
+                const profile = await getUserProfile(data.user.id);
+
+                if (!profile) {
+                    throw new Error('Profil utilisateur introuvable. Contactez l\'administrateur.');
+                }
+
+                // Redirection selon le rôle
+                showMessage('Connexion réussie ! Redirection...', 'success');
+                
+                setTimeout(async () => {
+                    await redirectByRole();
+                }, 1500);
+
+            } catch (error) {
+                toggleLoader(false);
+                showMessage(error.message || 'Erreur de connexion', 'error');
+            }
+        });
+
+        // Formulaire d'inscription
         document.getElementById('signup-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideMessage();
@@ -420,106 +436,100 @@
             const email = document.getElementById('signup-email').value;
             const password = document.getElementById('signup-password').value;
 
-            // L'envoi des métadonnées `prenom` et `nom` ici est la clé.
-            // Le trigger SQL `handle_new_user` les utilisera pour créer le profil.
-            const { error } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: { prenom, nom },
-                    emailRedirectTo: `${window.location.origin}/welcome.html`
+            try {
+                // 1. Créer le compte Auth
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: email,
+                    password: password
+                });
+
+                if (authError) throw authError;
+
+                if (!authData.user) {
+                    throw new Error('Erreur lors de la création du compte');
                 }
-            });
 
-            toggleLoader(false);
-            if (error) {
-                showMessage(error.message, 'error');
-            } else {
-                showMessage(
-                    `<strong>Inscription presque terminée !</strong><br>Un e-mail de vérification a été envoyé à <strong>${email}</strong>. Veuillez cliquer sur le lien pour activer votre compte.`,
-                    'info'
-                );
-                e.target.reset();
-            }
-        });
+                console.log('Compte Auth créé:', authData.user.id);
 
-        // Connexion
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideMessage();
-            toggleLoader(true);
+                // 2. Attendre que la session soit établie
+                await new Promise(resolve => setTimeout(resolve, 1000));
 
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
+                // 3. Créer le profil directement
+                const { error: profileError } = await supabase
+                    .from('users_profile')
+                    .insert({
+                        user_id: authData.user.id,
+                        prenom: prenom,
+                        nom: nom,
+                        role: 'user'
+                    });
 
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
-            
-            // Si la connexion réussit, on ne fait rien ici.
-            // L'événement 'SIGNED_IN' de onAuthStateChange s'occupera de la redirection.
+                if (profileError) {
+                    console.error('Erreur profil:', profileError);
+                    throw new Error(`Erreur lors de la création du profil: ${profileError.message}`);
+                }
 
-            if (error) {
+                console.log('Profil créé avec succès');
+
+                showMessage('Inscription réussie ! Confirmez le lien Supabase Auth envoyé à votre email pour finaliser votre inscription. Redirection...', 'success');
+
+                // 4. Redirection automatique vers index.html
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+
+            } catch (error) {
                 toggleLoader(false);
-                if (error.message.includes('Email not confirmed')) {
-                   showMessage(`Email non confirmé. <a onclick="resendActivation('${email}')">Renvoyer l'e-mail d'activation.</a>`, 'error');
-                } else {
-                   showMessage('Email ou mot de passe incorrect.', 'error');
+                console.error('Erreur complète:', error);
+                showMessage(error.message || 'Erreur lors de l\'inscription', 'error');
+                
+                // Si l'erreur vient du profil, supprimer le compte Auth créé
+                if (error.message.includes('profil')) {
+                    try {
+                        await supabase.auth.signOut();
+                    } catch (e) {
+                        console.error('Erreur lors du nettoyage:', e);
+                    }
                 }
             }
         });
 
-        // Renvoyer l'e-mail d'activation
-        async function resendActivation(email) {
-            hideMessage();
-            toggleLoader(true);
-            const { error } = await supabase.auth.resend({ type: 'signup', email });
-            toggleLoader(false);
-            if (error) {
-                showMessage(error.message, 'error');
-            } else {
-                showMessage(`Un nouvel e-mail d'activation a été envoyé à <strong>${email}</strong>.`, 'success');
-            }
-        }
-        
-        // Envoi du lien de réinitialisation
+        // Formulaire de réinitialisation du mot de passe - MISE À JOUR
         document.getElementById('password-reset-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideMessage();
             toggleLoader(true);
+
             const email = document.getElementById('reset-email').value;
-            const { error } = await supabase.auth.resetPasswordForEmail(email, {});
 
-            toggleLoader(false);
-            if (error) {
-                showMessage('Une erreur est survenue. Veuillez réessayer.', 'error');
-            } else {
+            try {
+                // Envoyer le lien de réinitialisation avec redirection vers auth.html
+                const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}/auth.html`
+                });
+
+                if (error) throw error;
+
+                // Message de succès
                 showMessage(
-                    'Si cette adresse e-mail est associée à un compte, un lien de réinitialisation vient d\'être envoyé.',
-                    'info'
+                    'Un email de vérification vous a été envoyé. Cliquez sur le lien pour réinitialiser votre mot de passe.',
+                    'success'
                 );
-                e.target.reset();
-            }
-        });
+                
+                toggleLoader(false);
 
-        // Enregistrement du nouveau mot de passe
-        document.getElementById('new-password-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideMessage();
-            toggleLoader(true);
-            const password = document.getElementById('new-password').value;
-            
-            const { error } = await supabase.auth.updateUser({ password });
+                // Réinitialiser le formulaire
+                document.getElementById('password-reset-form').reset();
 
-            toggleLoader(false);
-            if (error) {
-                showMessage(error.message, 'error');
-            } else {
-                showMessage('Votre mot de passe a été mis à jour avec succès ! Vous pouvez maintenant vous connecter.', 'success');
-                // On attend quelques secondes pour que l'utilisateur lise le message
-                setTimeout(() => {
-                    window.location.reload(); // Recharger la page pour revenir à l'état de connexion normal
-                }, 3000);
+            } catch (error) {
+                toggleLoader(false);
+                console.error('Erreur:', error);
+                showMessage(
+                    error.message || 'Une erreur est survenue. Veuillez réessayer.',
+                    'error'
+                );
             }
         });
     </script>
 </body>
-</html>
+                </html>

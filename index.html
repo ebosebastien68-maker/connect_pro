@@ -24,6 +24,9 @@
             --shadow-md: 0 2px 15px rgba(0,0,0,0.1);
             --shadow-lg: 0 4px 20px rgba(0,0,0,0.15);
             --navbar-height: 60px;
+            --primary-color: #ffd700;
+            --primary-dark: #e6c200;
+            --primary-gradient: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
         }
 
         body {
@@ -51,20 +54,21 @@
             left: 0;
             right: 0;
             height: var(--navbar-height);
-            background: #000000;
-            box-shadow: var(--shadow-md);
+            background: var(--primary-gradient);
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
             padding: 0 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 1000;
+            backdrop-filter: blur(10px);
         }
 
         .navbar-left {
-            color: white;
-            font-size: 20px;
+            color: #1a1a1a;
+            font-size: 22px;
             font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
             letter-spacing: 0.5px;
             flex-shrink: 0;
         }
@@ -75,8 +79,8 @@
         }
 
         .theme-toggle {
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.4);
+            background: rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(0, 0, 0, 0.2);
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -89,13 +93,14 @@
         }
 
         .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.05);
+            background: rgba(0, 0, 0, 0.2);
+            transform: scale(1.05) rotate(15deg);
         }
 
         .theme-toggle i {
             font-size: 18px;
-            color: white;
+            color: #1a1a1a;
+            transition: transform 0.3s ease;
         }
 
         .navbar-right {
@@ -110,8 +115,8 @@
             align-items: center;
             gap: 2px;
             cursor: pointer;
-            color: white;
-            transition: all 0.3s;
+            color: #1a1a1a;
+            transition: all 0.3s ease;
             text-decoration: none;
             position: relative;
             padding: 5px 8px;
@@ -120,24 +125,24 @@
         }
 
         .nav-item:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.1);
             transform: translateY(-2px);
         }
 
         .nav-item.active {
-            background: rgba(255, 255, 255, 0.25);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            background: rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
 
         .nav-item i {
             font-size: 20px;
-            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.3));
+            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.1));
         }
 
         .nav-item span {
             font-size: 11px;
             font-weight: 600;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
 
         .search-toggle-btn {
@@ -145,7 +150,7 @@
             top: var(--navbar-height);
             left: 10%;
             transform: translateX(-50%);
-            background: #1c1c1c;
+            background: var(--primary-gradient);
             border: none;
             border-radius: 0 0 12px 12px;
             width: 60px;
@@ -154,19 +159,19 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
             z-index: 1000;
             transition: all 0.3s ease;
         }
 
         .search-toggle-btn:hover {
-            background: #333;
+            background: var(--primary-dark);
             transform: translateX(-50%) translateY(2px);
         }
 
         .search-toggle-btn i {
             font-size: 16px;
-            color: #ffffff;
+            color: #1a1a1a;
             transition: transform 0.3s ease;
         }
 
@@ -175,11 +180,11 @@
         }
 
         body.dark-mode .search-toggle-btn {
-            background: #2d2d2d;
+            background: var(--primary-gradient);
         }
         
         body.dark-mode .search-toggle-btn:hover {
-            background: #404040;
+            background: var(--primary-dark);
         }
 
         .search-panel {
@@ -189,7 +194,7 @@
             right: 0;
             height: 280px;
             background: var(--bg-secondary);
-            border-top: 3px solid #667eea;
+            border-top: 3px solid var(--primary-color);
             box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
             z-index: 998;
             transition: bottom 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -213,7 +218,7 @@
         }
 
         .search-panel h3 i {
-            color: #667eea;
+            color: var(--primary-color);
         }
 
         .search-input-container {
@@ -235,21 +240,21 @@
 
         .search-input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
         }
 
         .search-btn {
             padding: 15px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary-gradient);
             border: none;
             border-radius: 12px;
-            color: white;
+            color: #1a1a1a;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
             display: flex;
             align-items: center;
             gap: 8px;
@@ -257,7 +262,7 @@
 
         .search-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
         }
 
         .view-more-btn {
@@ -346,6 +351,7 @@
             min-width: 200px;
             overflow: hidden;
             animation: slideDown 0.3s ease;
+            border: 2px solid var(--primary-color);
         }
 
         .menu-content.show {
@@ -376,7 +382,7 @@
         }
 
         .menu-item:hover {
-            background: rgba(102, 126, 234, 0.1);
+            background: rgba(255, 215, 0, 0.1);
             padding-left: 22px;
         }
 
@@ -409,7 +415,7 @@
 
         .spa-page {
             display: none;
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .spa-page.active {
@@ -419,11 +425,11 @@
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(20px) scale(0.98);
             }
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
             }
         }
 
@@ -453,14 +459,14 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary-gradient);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            color: #1a1a1a;
             font-weight: bold;
             font-size: 16px;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
             flex-shrink: 0;
         }
 
@@ -525,6 +531,18 @@
             box-shadow: var(--shadow-md);
         }
 
+        .article-video {
+            margin-top: 12px;
+        }
+
+        .article-video video {
+            width: 100%;
+            border-radius: 8px;
+            max-height: 480px;
+            background: #000;
+            box-shadow: var(--shadow-sm);
+        }
+
         .article-links {
             display: flex;
             gap: 8px;
@@ -534,20 +552,20 @@
         .link-btn {
             flex: 1;
             padding: 8px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary-gradient);
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-size: 12px;
             font-weight: 600;
-            color: white;
+            color: #1a1a1a;
             transition: all 0.3s;
-            box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 2px 6px rgba(255, 215, 0, 0.3);
         }
 
         .link-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
         }
 
         .reactions {
@@ -575,13 +593,13 @@
         }
 
         .reaction-btn:hover {
-            background: rgba(102, 126, 234, 0.1);
+            background: rgba(255, 215, 0, 0.1);
             transform: scale(1.1);
         }
 
         .reaction-btn.active {
-            background: rgba(102, 126, 234, 0.15);
-            color: #667eea;
+            background: rgba(255, 215, 0, 0.15);
+            color: var(--primary-color);
         }
 
         .reaction-btn span {
@@ -598,7 +616,7 @@
             flex: 1;
             padding: 15px;
             cursor: pointer;
-            color: #667eea;
+            color: var(--primary-color);
             font-weight: 600;
             display: flex;
             align-items: center;
@@ -611,12 +629,12 @@
         }
 
         .comments-toggle-large:hover {
-            background: rgba(102, 126, 234, 0.05);
+            background: rgba(255, 215, 0, 0.05);
         }
 
         .comment-count-badge {
-            background: #667eea;
-            color: white;
+            background: var(--primary-color);
+            color: #1a1a1a;
             border-radius: 12px;
             padding: 2px 8px;
             font-size: 11px;
@@ -632,18 +650,18 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s;
-            background: rgba(102, 126, 234, 0.03);
+            background: rgba(255, 215, 0, 0.03);
             border-right: 1px solid var(--border-color);
             position: relative;
         }
 
         .share-btn:hover {
-            background: rgba(102, 126, 234, 0.1);
+            background: rgba(255, 215, 0, 0.1);
         }
 
         .share-btn i {
             font-size: 20px;
-            color: #667eea;
+            color: var(--primary-color);
         }
 
         .share-menu {
@@ -730,7 +748,7 @@
         }
         .share-option.tiktok i { color: #000000; }
         body.dark-mode .share-option.tiktok i { color: #ffffff; }
-        .share-option.more i { color: #667eea; }
+        .share-option.more i { color: var(--primary-color); }
 
         .user-reactions-btn {
             width: 60px;
@@ -740,16 +758,16 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s;
-            background: rgba(102, 126, 234, 0.03);
+            background: rgba(255, 215, 0, 0.03);
         }
 
         .user-reactions-btn:hover {
-            background: rgba(102, 126, 234, 0.1);
+            background: rgba(255, 215, 0, 0.1);
         }
 
         .user-reactions-btn i {
             font-size: 20px;
-            color: #667eea;
+            color: var(--primary-color);
         }
 
         .comments-section {
@@ -768,7 +786,7 @@
 
         .spinner {
             border: 3px solid var(--border-color);
-            border-top: 3px solid #667eea;
+            border-top: 3px solid var(--primary-color);
             border-radius: 50%;
             width: 35px;
             height: 35px;
@@ -872,7 +890,7 @@
         }
 
         .options-menu a:hover {
-            background: rgba(102, 126, 234, 0.1);
+            background: rgba(255, 215, 0, 0.1);
         }
 
         .options-menu a.delete {
@@ -1064,6 +1082,10 @@
                     <div class="menu-item" id="admin-item" style="display: none;" onclick="window.location.href='publier.html'">
                         <i class="fas fa-edit"></i>
                         <span>Administration</span>
+                    </div>
+                    <div class="menu-item" id="settings-item" onclick="window.location.href='parametre.html'">
+                        <i class="fas fa-cog"></i>
+                        <span>Paramètres</span>
                     </div>
                     <div class="menu-divider"></div>
                     <div class="menu-item logout" id="logout-item" style="display: none;">
@@ -1278,32 +1300,47 @@
 
         function initNavigation() {
             const pageTitle = document.getElementById('page-title');
+            const menuDropdown = document.querySelector('.menu-dropdown');
+            const menuContent = document.getElementById('menu-dropdown');
+            
             document.querySelectorAll('.nav-item[data-page]').forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
+                    e.stopPropagation();
                     const page = this.getAttribute('data-page');
                     const title = this.getAttribute('data-title');
                     navigateToPage(page, title);
                 });
             });
-            document.querySelector('.menu-dropdown').addEventListener('click', function(e) {
+            
+            menuDropdown.addEventListener('click', function(e) {
+                e.preventDefault();
                 e.stopPropagation();
-                const menu = document.getElementById('menu-dropdown');
-                menu.classList.toggle('show');
-                if (menu.classList.contains('show')) {
+                const wasShown = menuContent.classList.contains('show');
+                
+                document.querySelectorAll('.share-menu.show').forEach(m => m.classList.remove('show'));
+                
+                menuContent.classList.toggle('show');
+                
+                if (!wasShown) {
                     pageTitle.textContent = 'Menu';
                 }
             });
+            
             document.addEventListener('click', function(e) {
-                const menu = document.getElementById('menu-dropdown');
                 if (!e.target.closest('.menu-dropdown')) {
-                    menu.classList.remove('show');
+                    menuContent.classList.remove('show');
                 }
                 if (!e.target.closest('.share-menu') && !e.target.closest('.share-btn')) {
                     document.querySelectorAll('.share-menu.show').forEach(m => m.classList.remove('show'));
                 }
+                if (!e.target.closest('.admin-options')) {
+                    document.querySelectorAll('.options-menu.show').forEach(menu => menu.classList.remove('show'));
+                }
             });
-            document.getElementById('logout-item').addEventListener('click', async function() {
+            
+            document.getElementById('logout-item').addEventListener('click', async function(e) {
+                e.stopPropagation();
                 await supabase.auth.signOut();
                 window.location.reload();
             });
@@ -1368,7 +1405,15 @@
                     table: 'sessions_commentaires' 
                 }, (payload) => {
                     console.log('Commentaire changé:', payload);
-                    loadArticles();
+                    // Au lieu de recharger toute la page, on recharge juste les commentaires de cet article
+                    if (payload.new && payload.new.article_id) {
+                        refreshCommentsOnly(payload.new.article_id);
+                        // Mettre à jour le compteur de commentaires
+                        updateCommentCount(payload.new.article_id);
+                    } else if (payload.old && payload.old.article_id) {
+                        refreshCommentsOnly(payload.old.article_id);
+                        updateCommentCount(payload.old.article_id);
+                    }
                 })
                 .subscribe();
 
@@ -1399,11 +1444,46 @@
                 .subscribe();
         }
 
+        // Fonction pour mettre à jour le compteur de commentaires
+        async function updateCommentCount(articleId) {
+            try {
+                const { count, error } = await supabase
+                    .from('sessions_commentaires')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('article_id', articleId);
+                
+                if (error) throw error;
+                
+                const card = document.querySelector(`[data-article-id="${articleId}"]`);
+                if (card) {
+                    const badge = card.querySelector('.comment-count-badge');
+                    const toggleBtn = card.querySelector('.comments-toggle-large');
+                    
+                    if (count > 0) {
+                        if (badge) {
+                            badge.textContent = count;
+                        } else if (toggleBtn) {
+                            const newBadge = document.createElement('span');
+                            newBadge.className = 'comment-count-badge';
+                            newBadge.textContent = count;
+                            toggleBtn.appendChild(newBadge);
+                        }
+                    } else {
+                        if (badge) {
+                            badge.remove();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur mise à jour compteur:', error);
+            }
+        }
+
         async function loadArticles() {
             try {
                 const { data: articles, error } = await supabase
                     .from('articles')
-                    .select(`*, users_profile(prenom, nom), article_images(image_url)`)
+                    .select(`*, users_profile(prenom, nom), article_images(image_url), article_videos(video_url)`)
                     .order('date_created', { ascending: false });
                 if (error) throw error;
                 document.getElementById('loader').style.display = 'none';
@@ -1412,7 +1492,23 @@
                     return;
                 }
                 allArticles = articles;
-                displayArticles(articles);
+                
+                // Charger les réactions de l'utilisateur
+                if (currentUser) {
+                    const { data: userReactions } = await supabase
+                        .from('article_reactions')
+                        .select('article_id, reaction_type')
+                        .eq('user_id', currentUser.id);
+                    
+                    // Associer les réactions aux articles
+                    allArticles.forEach(article => {
+                        article.userReactions = userReactions
+                            ? userReactions.filter(r => r.article_id === article.article_id)
+                            : [];
+                    });
+                }
+                
+                displayArticles(allArticles);
             } catch (error) {
                 console.error('Erreur:', error);
                 document.getElementById('loader').innerHTML = '<p style="color: red;">Erreur de chargement</p>';
@@ -1443,10 +1539,23 @@
             const author = article.users_profile;
             const initials = `${author.prenom[0]}${author.nom[0]}`.toUpperCase();
             const images = article.article_images || [];
+            const videos = article.article_videos || [];
             let imageClass = images.length === 1 ? 'single' : (images.length === 2 ? 'double' : (images.length > 2 ? 'multiple' : ''));
+            
+            // Vérifier les réactions de l'utilisateur
+            const userReactions = article.userReactions || [];
+            const hasLiked = userReactions.some(r => r.reaction_type === 'like');
+            const hasLoved = userReactions.some(r => r.reaction_type === 'love');
+            const hasLaughed = userReactions.some(r => r.reaction_type === 'rire');
+            const hasAngry = userReactions.some(r => r.reaction_type === 'colere');
+            
             const imagesHTML = images.length > 0 ? `
                 <div class="article-images ${imageClass}">
                     ${images.map(img => `<img src="${img.image_url}" alt="Image">`).join('')}
+                </div>` : '';
+            const videoHTML = videos.length > 0 ? `
+                <div class="article-video">
+                    <video controls playsinline preload="metadata" src="${videos[0].video_url}"></video>
                 </div>` : '';
             const linksHTML = (article.texte_url || article.vente_url || article.whatsapp_url) ? `
                 <div class="article-links">
@@ -1457,7 +1566,7 @@
 
             const adminOptionsHTML = (userProfile && userProfile.role === 'admin') ? `
                 <div class="admin-options">
-                    <button class="options-btn" onclick="toggleAdminMenu('options-menu-${article.article_id}')">
+                    <button class="options-btn" onclick="toggleAdminMenu(event, 'options-menu-${article.article_id}')">
                         <i class="fas fa-ellipsis-v"></i>
                     </button>
                     <div class="options-menu" id="options-menu-${article.article_id}">
@@ -1486,19 +1595,20 @@
                 <div class="article-content">
                     <div class="article-text">${article.texte}</div>
                     ${imagesHTML}
+                    ${videoHTML}
                     ${linksHTML}
                 </div>
                 <div class="reactions">
-                    <button class="reaction-btn" onclick="handleReaction('${article.article_id}', 'like')">
+                    <button class="reaction-btn ${hasLiked ? 'active' : ''}" onclick="handleReaction('${article.article_id}', 'like')">
                         <i class="fas fa-thumbs-up"></i><span>${article.reaction_like || 0}</span>
                     </button>
-                    <button class="reaction-btn" onclick="handleReaction('${article.article_id}', 'love')">
+                    <button class="reaction-btn ${hasLoved ? 'active' : ''}" onclick="handleReaction('${article.article_id}', 'love')">
                         <i class="fas fa-heart"></i><span>${article.reaction_love || 0}</span>
                     </button>
-                    <button class="reaction-btn" onclick="handleReaction('${article.article_id}', 'rire')">
+                    <button class="reaction-btn ${hasLaughed ? 'active' : ''}" onclick="handleReaction('${article.article_id}', 'rire')">
                         <i class="fas fa-laugh"></i><span>${article.reaction_rire || 0}</span>
                     </button>
-                    <button class="reaction-btn" onclick="handleReaction('${article.article_id}', 'colere')">
+                    <button class="reaction-btn ${hasAngry ? 'active' : ''}" onclick="handleReaction('${article.article_id}', 'colere')">
                         <i class="fas fa-angry"></i><span>${article.reaction_colere || 0}</span>
                     </button>
                 </div>
@@ -1628,7 +1738,8 @@
             });
         }
 
-        function toggleAdminMenu(menuId) {
+        function toggleAdminMenu(event, menuId) {
+            event.stopPropagation();
             document.querySelectorAll('.options-menu.show').forEach(menu => {
                 if (menu.id !== menuId) {
                     menu.classList.remove('show');
@@ -1636,12 +1747,6 @@
             });
             document.getElementById(menuId)?.classList.toggle('show');
         }
-
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.admin-options')) {
-                document.querySelectorAll('.options-menu.show').forEach(menu => menu.classList.remove('show'));
-            }
-        });
 
         function editArticle(articleId) {
             window.location.href = `edit-article.html?id=${articleId}`;
@@ -1705,7 +1810,7 @@
         }
 
         async function loadComments(articleId, container) {
-            container.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+            container.innerHTML = '<div class="loader"><div class="spinner"></div><p style="margin-top: 10px; color: var(--text-tertiary); font-size: 13px;">Chargement des commentaires...</p></div>';
             try {
                 const { data: comments, error } = await supabase
                     .from('sessions_commentaires')
@@ -1714,13 +1819,23 @@
                     .order('date_created', { ascending: false });
                 if (error) throw error;
                 if (window.CommentsWidget) {
-                    window.CommentsWidget.render(container, articleId, comments, currentUser, userProfile);
+                    window.CommentsWidget.render(container, articleId, comments, currentUser, userProfile, refreshCommentsOnly);
                 }
             } catch (error) {
                 console.error('Erreur:', error);
-                container.innerHTML = '<p style="color: red; padding: 20px;">Erreur de chargement</p>';
+                container.innerHTML = '<p style="color: red; padding: 20px; text-align: center;">Erreur de chargement des commentaires</p>';
             }
         }
+
+        // Fonction pour recharger uniquement les commentaires sans recharger toute la page
+        async function refreshCommentsOnly(articleId) {
+            const container = document.getElementById(`comments-${articleId}`);
+            if (container && container.classList.contains('show')) {
+                await loadComments(articleId, container);
+            }
+        }
+        
+        window.refreshCommentsOnly = refreshCommentsOnly;
 
         async function viewUserReactions(articleId) {
             if (!currentUser || !userProfile) {
@@ -1794,4 +1909,4 @@
         }, 30000);
     </script>
 </body>
-</html>
+    </html>
