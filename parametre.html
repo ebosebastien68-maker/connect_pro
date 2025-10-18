@@ -1,506 +1,302 @@
-<!DOCTYPE html>
+<!doctype html>
+
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paramètres - Connect PRO</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Paramètres — Connect PRO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{
+      --bg: #0f1724; /* deep navy */
+      --card: rgba(255,255,255,0.03);
+      --glass: rgba(255,255,255,0.04);
+      --muted: #9aa4b2;
+      --accent: linear-gradient(90deg,#ffd54a 0%,#ffb86b 100%);
+      --success: #22c55e;
+      --danger: #ff6b6b;
+      --glass-border: rgba(255,255,255,0.06);
+      --radius: 14px;
+      --shadow: 0 6px 30px rgba(2,6,23,0.6);
+      color-scheme: dark;
+    }*{box-sizing:border-box}
+html,body{height:100%;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;margin:0;background:linear-gradient(180deg,#071023 0%,#081127 60%);color:#e6eef8}
 
-        :root {
-            --bg-primary: #f5f7fa;
-            --bg-secondary: #ffffff;
-            --text-primary: #333333;
-            --text-secondary: #666666;
-            --text-tertiary: #999999;
-            --border-color: #f0f0f0;
-            --shadow-sm: 0 2px 10px rgba(0,0,0,0.08);
-            --shadow-md: 0 2px 15px rgba(0,0,0,0.1);
-            --shadow-lg: 0 4px 20px rgba(0,0,0,0.15);
-            --navbar-height: 60px;
-            --primary-color: #ffd700;
-            --primary-dark: #e6c200;
-            --primary-gradient: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-        }
+/* top bar */
+header.appbar{position:fixed;inset:0 0 auto 0;height:72px;padding:10px 22px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(8px);background:linear-gradient(90deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));border-bottom:1px solid var(--glass-border);z-index:40}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:44px;height:44px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#0b1220;font-weight:800;font-size:18px;box-shadow:0 6px 18px rgba(255,181,71,0.12)}
+.brand h1{font-size:18px;margin:0;font-weight:700}
+.brand p{margin:0;font-size:12px;color:var(--muted)}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--bg-primary);
-            padding-top: var(--navbar-height);
-            transition: background 0.3s ease, color 0.3s ease;
-        }
+/* container */
+main{max-width:980px;margin:110px auto;padding:20px;display:grid;grid-template-columns:360px 1fr;gap:28px}
 
-        body.dark-mode {
-            --bg-primary: #1a1a1a;
-            --bg-secondary: #2d2d2d;
-            --text-primary: #e0e0e0;
-            --text-secondary: #b0b0b0;
-            --text-tertiary: #808080;
-            --border-color: #404040;
-            --shadow-sm: 0 2px 10px rgba(0,0,0,0.3);
-            --shadow-md: 0 2px 15px rgba(0,0,0,0.4);
-            --shadow-lg: 0 4px 20px rgba(0,0,0,0.5);
-        }
+/* left profile card */
+.card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid var(--glass-border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.profile-top{display:flex;gap:16px;align-items:center}
+.avatar{width:80px;height:80px;border-radius:16px;background:linear-gradient(135deg,#ffb86b,#ffd54a);display:flex;align-items:center;justify-content:center;font-weight:800;color:#071026;font-size:22px}
+.profile-meta h2{margin:0;font-size:18px}
+.profile-meta p{margin:0;color:var(--muted);font-size:13px}
 
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: var(--navbar-height);
-            background: var(--primary-gradient);
-            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
-            padding: 0 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-        }
+.meta-list{margin-top:18px;display:flex;flex-direction:column;gap:8px}
+.meta-item{display:flex;justify-content:space-between;padding:10px;border-radius:10px;background:rgba(255,255,255,0.012);border:1px solid rgba(255,255,255,0.02)}
+.meta-item small{color:var(--muted)}
 
-        .navbar-left {
-            color: #1a1a1a;
-            font-size: 22px;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-            letter-spacing: 0.5px;
-            flex-shrink: 0;
-        }
+/* right column - settings */
+.settings{display:flex;flex-direction:column;gap:18px}
+.section{padding:18px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid var(--glass-border)}
+.section h3{margin:0 0 10px 0;font-size:16px}
 
-        .navbar-center {
-            display: flex;
-            align-items: center;
-        }
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+input[type='text'],input[type='password']{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);background:transparent;color:inherit;font-size:15px}
+input:focus{outline:none;box-shadow:0 6px 20px rgba(3,7,18,0.6);border-color:rgba(255,181,71,0.18)}
 
-        .theme-toggle {
-            background: rgba(0, 0, 0, 0.1);
-            border: 2px solid rgba(0, 0, 0, 0.2);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
+.actions{display:flex;gap:10px;margin-top:12px}
+.btn{padding:12px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:700}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+.btn-primary{background:var(--accent);color:#071026;box-shadow:0 8px 24px rgba(255,181,71,0.12)}
+.btn-danger{background:linear-gradient(180deg,#ff7b7b,#ff5656);color:white}
 
-        .theme-toggle:hover {
-            background: rgba(0, 0, 0, 0.2);
-            transform: scale(1.05) rotate(15deg);
-        }
+.message{padding:10px;border-radius:10px;font-size:14px}
+.msg-success{background:rgba(34,197,94,0.08);color:var(--success);border:1px solid rgba(34,197,94,0.12)}
+.msg-error{background:rgba(255,107,107,0.06);color:var(--danger);border:1px solid rgba(255,107,107,0.08)}
 
-        .theme-toggle i {
-            font-size: 18px;
-            color: #1a1a1a;
-            transition: transform 0.3s ease;
-        }
+/* delete block */
+.delete-verify{display:flex;flex-direction:column;gap:8px}
+.verification-string{font-family:monospace;padding:12px;border-radius:8px;background:rgba(255,255,255,0.01);color:var(--muted);user-select:none}
 
-        .navbar-right {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
+/* responsive */
+@media (max-width:920px){main{grid-template-columns:1fr;gap:16px;margin:120px 20px}}
 
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-            cursor: pointer;
-            color: #1a1a1a;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            position: relative;
-            padding: 5px 8px;
-            border-radius: 8px;
-            min-width: 50px;
-        }
+/* small micro-interactions */
+.fade-in{animation:fadeIn .5s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-        .nav-item:hover {
-            background: rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .nav-item.active {
-            background: rgba(0, 0, 0, 0.15);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-
-        .nav-item i {
-            font-size: 20px;
-            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.1));
-        }
-
-        .nav-item span {
-            font-size: 11px;
-            font-weight: 600;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-        }
-
-        .page-title {
-            position: fixed;
-            top: var(--navbar-height);
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--bg-secondary);
-            padding: 8px 25px;
-            border-radius: 0 0 12px 12px;
-            box-shadow: var(--shadow-sm);
-            z-index: 999;
-            font-size: 16px;
-            font-weight: bold;
-            color: var(--text-primary);
-            transition: all 0.3s ease;
-            max-width: 90%;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .settings-container {
-            max-width: 600px;
-            margin: 40px auto;
-            padding: 20px;
-        }
-
-        .settings-section {
-            background: var(--bg-secondary);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: var(--shadow-md);
-        }
-
-        .settings-section h2 {
-            color: var(--text-primary);
-            font-size: 18px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .settings-section h2 i {
-            color: var(--primary-color);
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            color: var(--text-secondary);
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 15px;
-            background: var(--primary-gradient);
-            border: none;
-            border-radius: 12px;
-            color: #1a1a1a;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
-        }
-
-        .delete-section {
-            border: 2px solid #ff4757;
-            border-radius: 15px;
-            padding: 20px;
-            background: rgba(255, 71, 87, 0.05);
-        }
-
-        .verification-string {
-            background: var(--bg-primary);
-            padding: 10px;
-            border-radius: 8px;
-            font-family: monospace;
-            white-space: pre-wrap;
-            word-break: break-all;
-            user-select: none;
-            margin-bottom: 15px;
-            color: var(--text-primary);
-        }
-
-        .no-copy-input {
-            user-select: none;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .error-message {
-            color: #ff4757;
-            font-size: 14px;
-            margin-top: 5px;
-            display: none;
-        }
-
-        .success-message {
-            color: #28a745;
-            font-size: 14px;
-            margin-top: 5px;
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .settings-container {
-                padding: 15px;
-                margin: 30px auto;
-            }
-
-            .settings-section {
-                padding: 15px;
-            }
-
-            .submit-btn {
-                padding: 12px;
-                font-size: 14px;
-            }
-        }
-    </style>
+  </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-left">Connect PRO</div>
-        <div class="navbar-center">
-            <button class="theme-toggle" id="theme-toggle">
-                <i class="fas fa-moon" id="theme-icon"></i>
-            </button>
-        </div>
-        <div class="navbar-right">
-            <div class="nav-item" onclick="window.location.href='index.html'">
-                <i class="fas fa-home"></i>
-                <span>Retour</span>
-            </div>
-        </div>
-    </nav>
-
-    <div class="page-title">Paramètres</div>
-
-    <div class="settings-container">
-        <div class="settings-section">
-            <h2><i class="fas fa-user-edit"></i> Modifier le nom et prénom</h2>
-            <form id="update-profile-form">
-                <div class="form-group">
-                    <label for="prenom">Prénom</label>
-                    <input type="text" id="prenom" required>
-                </div>
-                <div class="form-group">
-                    <label for="nom">Nom</label>
-                    <input type="text" id="nom" required>
-                </div>
-                <div class="form-group">
-                    <label for="current-password">Mot de passe actuel (obligatoire)</label>
-                    <input type="password" id="current-password" required>
-                </div>
-                <button type="submit" class="submit-btn"><i class="fas fa-save"></i> Enregistrer les modifications</button>
-                <p class="error-message" id="update-error"></p>
-                <p class="success-message" id="update-success"></p>
-            </form>
-        </div>
-
-        <div class="settings-section delete-section">
-            <h2><i class="fas fa-trash-alt"></i> Supprimer le compte</h2>
-            <p>Pour supprimer votre compte, veuillez taper exactement la chaîne suivante (sans copier-coller) :</p>
-            <div class="verification-string">₽ o hn ₹ ₿₱ ¶v; ”(t“ >< æ₿β ϟϛχ ποιι θετψψ ηφσϟνχ ζδσξλππ φδρψη κξγφϛ βνμκ ϡλλπο γφζϛϛφθσ ∩∋∈→8≡⊷ εε∨ ⊥∡⌀∞∞ℝℕ∇ 23ϡ⊗⊙⊖⊕∀789↕↑↔∨∧⌈⌉∡⌀√</div>
-            <div class="form-group">
-                <label for="verification-input">Taper la chaîne ici :</label>
-                <input type="text" id="verification-input" class="no-copy-input" onpaste="return false" oncopy="return false" required>
-            </div>
-            <button id="verify-btn" class="submit-btn" style="background: linear-gradient(135deg, #ff4757 0%, #e04250 100%); color: white; box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);"><i class="fas fa-check"></i> Vérifier</button>
-            <div id="delete-confirm" class="hidden">
-                <div class="form-group">
-                    <label for="delete-password">Confirmez avec votre mot de passe :</label>
-                    <input type="password" id="delete-password" required>
-                </div>
-                <button id="delete-btn" class="submit-btn" style="background: linear-gradient(135deg, #ff4757 0%, #e04250 100%); color: white; box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);"><i class="fas fa-trash"></i> Supprimer définitivement</button>
-            </div>
-            <p class="error-message" id="delete-error"></p>
-            <p class="success-message" id="delete-success"></p>
-        </div>
+  <header class="appbar">
+    <div class="brand">
+      <div class="logo">CP</div>
+      <div>
+        <h1>Connect PRO</h1>
+        <p>Paramètres & Profil</p>
+      </div>
     </div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <button id="logoutBtn" class="btn btn-ghost">Déconnexion</button>
+    </div>
+  </header>  <main>
+    <!-- LEFT: profile summary -->
+    <section class="card fade-in" id="profileCard">
+      <div class="profile-top">
+        <div class="avatar" id="avatar">S</div>
+        <div class="profile-meta">
+          <h2 id="displayName">Nom Prénom</h2>
+          <p id="displayEmail">email@exemple.com</p>
+        </div>
+      </div><div class="meta-list">
+    <div class="meta-item"><small>Rôle</small><strong id="displayRole">Utilisateur</strong></div>
+    <div class="meta-item"><small>Inscrit le</small><strong id="displayDate">–</strong></div>
+    <div class="meta-item"><small>Dernière activité</small><strong id="displayLast">–</strong></div>
+  </div>
 
-    <script src="supabaseClient.js"></script>
-    <script>
-        const { supabase, getCurrentUser, getUserProfile } = window.supabaseClient;
-        let currentUser = null;
-        let userProfile = null;
-        const verificationString = "₽ o hn ₹ ₿₱ ¶v; ”(t“ >< æ₿β ϟϛχ ποιι θετψψ ηφσϟνχ ζδσξλππ φδρψη κξγφϛ βνμκ ϡλλπο γφζϛϛφθσ ∩∋∈→8≡⊷ εε∨ ⊥∡⌀∞∞ℝℕ∇ 23ϡ⊗⊙⊖⊕∀789↕↑↔∨∧⌈⌉∡⌀√";
+</section>
 
-        const themeToggle = document.getElementById('theme-toggle');
-        const themeIcon = document.getElementById('theme-icon');
-        const body = document.body;
+<!-- RIGHT: settings forms -->
+<section class="settings">
 
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        if (savedTheme === 'dark') {
-            body.classList.add('dark-mode');
-            themeIcon.classList.replace('fa-moon', 'fa-sun');
-        }
+  <div class="section card fade-in">
+    <h3>Modifier le profil</h3>
+    <form id="updateProfile">
+      <div class="form-row">
+        <div>
+          <label for="prenom">Prénom</label>
+          <input id="prenom" type="text" placeholder="Ton prénom" required />
+        </div>
+        <div>
+          <label for="nom">Nom</label>
+          <input id="nom" type="text" placeholder="Ton nom" required />
+        </div>
+      </div>
 
-        themeToggle.addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
-            if (body.classList.contains('dark-mode')) {
-                themeIcon.classList.replace('fa-moon', 'fa-sun');
-                localStorage.setItem('theme', 'dark');
-            } else {
-                themeIcon.classList.replace('fa-sun', 'fa-moon');
-                localStorage.setItem('theme', 'light');
-            }
-        });
+      <div style="margin-top:12px">
+        <label for="currentPassword">Mot de passe actuel (confirmez pour valider)</label>
+        <input id="currentPassword" type="password" placeholder="Mot de passe" required />
+      </div>
 
-        async function init() {
-            currentUser = await getCurrentUser();
-            if (!currentUser) {
-                window.location.href = 'connexion.html';
-                return;
-            }
-            userProfile = await getUserProfile(currentUser.id);
-            if (userProfile) {
-                document.getElementById('prenom').value = userProfile.prenom || '';
-                document.getElementById('nom').value = userProfile.nom || '';
-            }
-        }
+      <div class="actions">
+        <button class="btn btn-primary" type="submit">Enregistrer</button>
+        <button type="button" id="cancelEdit" class="btn btn-ghost">Annuler</button>
+      </div>
 
-        document.getElementById('update-profile-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const prenom = document.getElementById('prenom').value.trim();
-            const nom = document.getElementById('nom').value.trim();
-            const password = document.getElementById('current-password').value;
-            const errorElem = document.getElementById('update-error');
-            const successElem = document.getElementById('update-success');
+      <div id="updateMsg" style="margin-top:12px" class="message hidden" role="status"></div>
+    </form>
+  </div>
 
-            errorElem.style.display = 'none';
-            successElem.style.display = 'none';
+  <div class="section card fade-in">
+    <h3>Sécurité</h3>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:10px">Change ton mot de passe ou supprime ton compte.</p>
+    <div style="display:flex;gap:10px">
+      <button id="changePwd" class="btn btn-ghost">Changer le mot de passe</button>
+      <button id="startDelete" class="btn btn-danger">Supprimer le profil</button>
+    </div>
+  </div>
 
-            if (!password) {
-                errorElem.textContent = 'Le mot de passe actuel est obligatoire.';
-                errorElem.style.display = 'block';
-                return;
-            }
+  <div id="deleteBlock" class="section card fade-in" style="display:none">
+    <h3>Vérification suppression</h3>
+    <div class="delete-verify">
+      <div class="verification-string" id="verificationString">₽ o hn ₹ ₿₱ ¶v; ”(t“ &lt;&gt; æ₿β ...</div>
+      <input id="verificationInput" placeholder="Tape exactement la chaîne ci‑dessus" />
+      <div style="display:flex;gap:8px">
+        <button id="verifyBtn" class="btn btn-primary">Vérifier</button>
+        <button id="cancelDelete" class="btn btn-ghost">Annuler</button>
+      </div>
+      <div id="deleteArea" style="display:none;margin-top:10px">
+        <input id="deletePassword" type="password" placeholder="Mot de passe pour confirmer" />
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="confirmDelete" class="btn btn-danger">Supprimer définitivement</button>
+          <button id="backDelete" class="btn btn-ghost">Retour</button>
+        </div>
+        <div id="deleteMsg" style="margin-top:12px" class="message hidden"></div>
+      </div>
+    </div>
+  </div>
 
-            try {
-                // Verify password
-                const { error: authError } = await supabase.auth.signInWithPassword({
-                    email: currentUser.email,
-                    password: password
-                });
-                if (authError) throw new Error('Mot de passe incorrect.');
+</section>
 
-                // Update profile
-                const { data, error } = await supabase
-                  .from('users_profile')
-                  .select('user_id, prenom, nom')
-                  .eq('user_id', userId);
+  </main>  <script>
+    // NOTE: this file assumes you already have a working supabaseClient.js that sets window.supabase
+    const supabase = window.supabase;
+    if (!supabase) console.warn('supabase client not found on window.supabase — assure-toi de charger supabaseClient.js');
 
-                if (updateError) throw updateError;
+    const logoutBtn = document.getElementById('logoutBtn');
+    const avatarEl = document.getElementById('avatar');
+    const displayName = document.getElementById('displayName');
+    const displayEmail = document.getElementById('displayEmail');
+    const displayRole = document.getElementById('displayRole');
+    const displayDate = document.getElementById('displayDate');
+    const displayLast = document.getElementById('displayLast');
 
-                successElem.textContent = 'Profil mis à jour avec succès.';
-                successElem.style.display = 'block';
-            } catch (error) {
-                errorElem.textContent = error.message || 'Une erreur est survenue.';
-                errorElem.style.display = 'block';
-            }
-        });
+    const updateProfileForm = document.getElementById('updateProfile');
+    const updateMsg = document.getElementById('updateMsg');
 
-        document.getElementById('verify-btn').addEventListener('click', () => {
-            const input = document.getElementById('verification-input').value;
-            const errorElem = document.getElementById('delete-error');
-            errorElem.style.display = 'none';
+    const startDelete = document.getElementById('startDelete');
+    const deleteBlock = document.getElementById('deleteBlock');
+    const verificationString = document.getElementById('verificationString').textContent.trim();
+    const verifyBtn = document.getElementById('verifyBtn');
+    const verificationInput = document.getElementById('verificationInput');
+    const deleteArea = document.getElementById('deleteArea');
+    const deletePassword = document.getElementById('deletePassword');
+    const confirmDelete = document.getElementById('confirmDelete');
+    const deleteMsg = document.getElementById('deleteMsg');
 
-            if (input === verificationString) {
-                document.getElementById('delete-confirm').classList.remove('hidden');
-            } else {
-                errorElem.textContent = 'La chaîne ne correspond pas. Veuillez réessayer.';
-                errorElem.style.display = 'block';
-            }
-        });
+    // helpers
+    function showMessage(elem, text, type='success'){
+      elem.classList.remove('hidden');
+      elem.classList.remove('msg-error','msg-success');
+      elem.classList.add(type==='error' ? 'msg-error' : 'msg-success');
+      elem.textContent = text;
+    }
+    function hideMessage(elem){ elem.classList.add('hidden'); elem.textContent=''; }
 
-        document.getElementById('delete-btn').addEventListener('click', async () => {
-            const password = document.getElementById('delete-password').value;
-            const errorElem = document.getElementById('delete-error');
-            const successElem = document.getElementById('delete-success');
+    async function getUser(){
+      if (!supabase) return null;
+      const { data: { user } = {}, error } = await supabase.auth.getUser();
+      if (error) { console.warn('getUser error', error); return null; }
+      return user;
+    }
 
-            errorElem.style.display = 'none';
-            successElem.style.display = 'none';
+    async function getProfile(userId){
+      if (!supabase || !userId) return null;
+      const { data, error } = await supabase.from('users_profile').select('user_id,prenom,nom,role,date_created').eq('user_id', userId).maybeSingle();
+      if (error) { console.warn('profile fetch error', error); return null; }
+      return data;
+    }
 
-            if (!password) {
-                errorElem.textContent = 'Le mot de passe est obligatoire.';
-                errorElem.style.display = 'block';
-                return;
-            }
+    async function init(){
+      const user = await getUser();
+      if (!user) { window.location.href='connexion.html'; return; }
 
-            try {
-                // Verify password
-                const { error: authError } = await supabase.auth.signInWithPassword({
-                    email: currentUser.email,
-                    password: password
-                });
-                if (authError) throw new Error('Mot de passe incorrect.');
+      const profile = await getProfile(user.id);
+      avatarEl.textContent = (profile && profile.prenom ? profile.prenom[0] : (user.email ? user.email[0] : 'U')).toUpperCase();
+      displayName.textContent = (profile && profile.prenom ? profile.prenom : '') + (profile && profile.nom ? ' ' + profile.nom : '');
+      displayEmail.textContent = user.email || '';
+      displayRole.textContent = profile && profile.role ? profile.role : 'user';
+      displayDate.textContent = profile && profile.date_created ? new Date(profile.date_created).toLocaleDateString() : '—';
+      // fill form
+      document.getElementById('prenom').value = profile && profile.prenom ? profile.prenom : '';
+      document.getElementById('nom').value = profile && profile.nom ? profile.nom : '';
+    }
 
-                // Delete profile (note: full auth deletion may require server-side)
-                const { error: deleteError } = await supabase
-                    .from('users_profile')
-                    .delete()
-                    .eq('id', currentUser.id);
+    logoutBtn.addEventListener('click', async ()=>{
+      await supabase.auth.signOut();
+      window.location.href='connexion.html';
+    });
 
-                if (deleteError) throw deleteError;
+    updateProfileForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      hideMessage(updateMsg);
+      const prenom = document.getElementById('prenom').value.trim();
+      const nom = document.getElementById('nom').value.trim();
+      const password = document.getElementById('currentPassword').value;
 
-                await supabase.auth.signOut();
-                successElem.textContent = 'Compte supprimé avec succès. Redirection...';
-                successElem.style.display = 'block';
-                setTimeout(() => {
-                    window.location.href = 'connexion.html';
-                }, 2000);
-            } catch (error) {
-                errorElem.textContent = error.message || 'Une erreur est survenue.';
-                errorElem.style.display = 'block';
-            }
-        });
+      if (!password) return showMessage(updateMsg, 'Le mot de passe actuel est requis.', 'error');
+      const user = await getUser(); if (!user) return showMessage(updateMsg, 'Utilisateur non connecté', 'error');
 
-        init();
-    </script>
-</body>
-    </html>
+      try{
+        // reauthenticate (this calls Supabase Auth)
+        const { error: authError } = await supabase.auth.signInWithPassword({ email: user.email, password });
+        if (authError) throw authError;
+
+        const { data, error } = await supabase.from('users_profile').update({ prenom, nom }).eq('user_id', user.id).select().maybeSingle();
+        if (error) throw error;
+
+        showMessage(updateMsg, 'Profil mis à jour avec succès.');
+        // update UI
+        document.getElementById('prenom').value = data.prenom || prenom;
+        document.getElementById('nom').value = data.nom || nom;
+        document.getElementById('currentPassword').value = '';
+        await init();
+      }catch(err){ console.error(err); showMessage(updateMsg, err.message || 'Erreur lors de la mise à jour', 'error'); }
+    });
+
+    startDelete.addEventListener('click', ()=>{ deleteBlock.style.display='block'; deleteBlock.scrollIntoView({behavior:'smooth'}); });
+
+    document.getElementById('cancelDelete').addEventListener('click', ()=>{ deleteBlock.style.display='none'; });
+
+    verifyBtn.addEventListener('click', ()=>{
+      hideMessage(deleteMsg);
+      if (verificationInput.value.trim() === verificationString) {
+        deleteArea.style.display='block'; verifyBtn.style.display='none';
+      } else showMessage(deleteMsg,'La chaîne ne correspond pas.','error');
+    });
+
+    confirmDelete.addEventListener('click', async ()=>{
+      hideMessage(deleteMsg);
+      const pwd = deletePassword.value;
+      if (!pwd) return showMessage(deleteMsg,'Le mot de passe est requis.', 'error');
+
+      const user = await getUser(); if (!user) return showMessage(deleteMsg,'Utilisateur non connecté','error');
+      try{
+        const { error: authError } = await supabase.auth.signInWithPassword({ email: user.email, password: pwd });
+        if (authError) throw authError;
+
+        const { error } = await supabase.from('users_profile').delete().eq('user_id', user.id);
+        if (error) throw error;
+
+        showMessage(deleteMsg, 'Profil supprimé côté base. Pour supprimer l'auth (utilisateur Supabase), utiliser une route serveur admin.', 'success');
+        await supabase.auth.signOut();
+        setTimeout(()=>window.location.href='connexion.html',1500);
+      }catch(err){ console.error(err); showMessage(deleteMsg, err.message || 'Erreur lors de la suppression','error'); }
+    });
+
+    // init UI
+    init();
+  </script></body>
+</html>
