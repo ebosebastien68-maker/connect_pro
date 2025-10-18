@@ -430,10 +430,10 @@
                 if (authError) throw new Error('Mot de passe incorrect.');
 
                 // Update profile
-                const { error: updateError } = await supabase
-                    .from('users_profile')
-                    .update({ prenom, nom })
-                    .eq('id', currentUser.id);
+                const { data, error } = await supabase
+                  .from('users_profile')
+                  .select('user_id, prenom, nom')
+                  .eq('user_id', userId);
 
                 if (updateError) throw updateError;
 
